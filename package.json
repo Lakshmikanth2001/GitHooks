@@ -1,0 +1,108 @@
+{
+	"name": "git-hooks",
+	"displayName": "git_hooks",
+	"description": "Integrating git hooks to vscode",
+	"version": "0.0.1",
+	"engines": {
+		"vscode": "^1.64.0"
+	},
+	"categories": [
+		"Other"
+	],
+	"activationEvents": [
+		"onView:git_hooks_view"
+	],
+	"main": "./out/extension.js",
+	"contributes": {
+		"menus": {
+			"view/title": [
+				{
+					"command": "git-hooks.open_hook",
+					"when": "view == git_hooks_view"
+				},
+				{
+					"command": "git-hooks.reload_hooks",
+					"when": "view == git_hooks_view",
+					"group": "navigation"
+				}
+			],
+			"view/item/context": [
+				{
+					"command": "git-hooks.open_hook",
+					"when": "view == git_hooks_view && viewItem == label",
+					"group": "inline"
+				},
+				{
+					"command": "git-hooks.run_hook",
+					"when": "view == git_hooks_view && viewItem == label",
+					"group": "inline"
+				},
+				{
+					"command": "git-hooks.toggle_hook",
+					"when": "view == git_hooks_view && viewItem == label",
+					"group": "inline"
+				}
+			]
+		},
+		"viewsContainers": {
+			"activitybar": [
+				{
+					"id": "git_hooks",
+					"title": "Git Hooks",
+					"icon": "$(edit)"
+				}
+			]
+		},
+		"views": {
+			"git_hooks": [
+				{
+					"id": "git_hooks_view",
+					"name": "Git Hooks"
+				}
+			]
+		},
+		"commands": [
+			{
+				"command": "git-hooks.open_hook",
+				"title": "Open Hook",
+				"icon": "$(edit)"
+			},
+			{
+				"command": "git-hooks.run_hook",
+				"title": "Run Hook",
+				"icon": "$(debug-start)"
+			},
+			{
+				"command": "git-hooks.toggle_hook",
+				"title": "Toggle Hook",
+				"icon": "$(pin)"
+			},
+			{
+				"command": "git-hooks.reload_hooks",
+				"title": "Reload Hooks",
+				"icon": "$(timeline-refresh)"
+			}
+		]
+	},
+	"scripts": {
+		"vscode:prepublish": "npm run compile",
+		"compile": "tsc -p ./",
+		"watch": "tsc -watch -p ./",
+		"pretest": "npm run compile && npm run lint",
+		"lint": "eslint src --ext ts",
+		"test": "node ./out/test/runTest.js"
+	},
+	"devDependencies": {
+		"@types/vscode": "^1.64.0",
+		"@types/glob": "^7.2.0",
+		"@types/mocha": "^9.0.0",
+		"@types/node": "14.x",
+		"@typescript-eslint/eslint-plugin": "^5.9.1",
+		"@typescript-eslint/parser": "^5.9.1",
+		"eslint": "^8.6.0",
+		"glob": "^7.2.0",
+		"mocha": "^9.1.3",
+		"typescript": "^4.5.4",
+		"@vscode/test-electron": "^2.0.3"
+	}
+}
