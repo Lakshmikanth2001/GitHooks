@@ -17,10 +17,6 @@
 		"menus": {
 			"view/title": [
 				{
-					"command": "git-hooks.open_hook",
-					"when": "view == git_hooks_view"
-				},
-				{
 					"command": "git-hooks.reload_hooks",
 					"when": "view == git_hooks_view",
 					"group": "navigation"
@@ -49,7 +45,7 @@
 				{
 					"id": "git_hooks",
 					"title": "Git Hooks",
-					"icon": "$(edit)"
+					"icon": "./src/git_hooks_icon.svg"
 				}
 			]
 		},
