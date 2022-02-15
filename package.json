@@ -10,7 +10,7 @@
 		"Other"
 	],
 	"activationEvents": [
-		"onView:git_hooks_view"
+		"onStartupFinished"
 	],
 	"main": "./out/extension.js",
 	"contributes": {
@@ -57,7 +57,8 @@
 			"git_hooks": [
 				{
 					"id": "git_hooks_view",
-					"name": "Git Hooks"
+					"name": "Git Hooks",
+					"when": "workSpaceHasGit"
 				}
 			]
 		},

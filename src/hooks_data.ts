@@ -21,8 +21,20 @@ export function getHooksDir(working_dir: string): string {
 }
 
 export class GitHooksProvider implements vscode.TreeDataProvider<Hook>{
+    constructor(private workspaceRoot: string) { 
+        vscode.window.onDidChangeActiveTextEditor(() => this.onActiveEditorChanged());
+        this.onActiveEditorChanged();
+    }
 
-    constructor(private workspaceRoot: string) { }
+    private onActiveEditorChanged(): void {
+        const working_dir = vscode.workspace.workspaceFolders?.[0] ?? '';
+        if(working_dir){
+            vscode.commands.executeCommand('setContext', 'workSpaceHasGit', this.workSpaceHasGit(working_dir.uri.fsPath));
+        }
+        else{
+            vscode.commands.executeCommand('setContext', 'workSpaceHasGit', false);
+        }
+    }
 
     getTreeItem(element: Hook): vscode.TreeItem {
         return element;
@@ -89,7 +101,14 @@ export class GitHooksProvider implements vscode.TreeDataProvider<Hook>{
         }
 
     }
-
+    private workSpaceHasGit(working_dir: string | undefined): Boolean {
+        if (working_dir) {
+            let git_dir = path.join(working_dir, '.git');
+            // check whether git_dir exists or not
+            return this.pathExists(git_dir);
+        }
+        return false;
+    }
     private pathExists(p: string): boolean {
         try {
             fs.accessSync(p);
