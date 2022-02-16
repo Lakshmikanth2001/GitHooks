@@ -2,7 +2,7 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 import * as fs from 'fs';
-import * as path from 'path'
+import * as path from 'path';
 import { GitHooksProvider } from './hooks_data';
 import * as process from 'process';
 
@@ -30,13 +30,13 @@ export function activate(context: vscode.ExtensionContext) {
 	// This line of code will only be executed once when your extension is activated
 	console.log('Congratulations, your extension "git-hooks" is now active!');
 
-	const working_dir = vscode.workspace.workspaceFolders?.[0] ?? '';
+	const workingDir = vscode.workspace.workspaceFolders?.[0] ?? '';
 
-	if (working_dir) {
+	if (workingDir) {
 		vscode.window.registerTreeDataProvider(
 			'git_hooks_view',
-			new GitHooksProvider(working_dir.uri.fsPath)
-		)
+			new GitHooksProvider(workingDir.uri.fsPath)
+		);
 	}
 
 
@@ -45,27 +45,15 @@ export function activate(context: vscode.ExtensionContext) {
 	// Now provide the implementation of the command with registerCommand
 	// The commandId parameter must match the command field in package.json
 
-	let open_hooks = vscode.commands.registerCommand('git-hooks.open_hook', (hook) => {
+	let openHooks = vscode.commands.registerCommand('git-hooks.openHook', (hook) => {
 
 		const gitHookDir = getHooksDir();
-		const git_hooks: string[] = fs.readdirSync(gitHookDir);
-
-		git_hooks.forEach(git_hook => {
-			if (git_hook.indexOf('.sample')) {
-				// inactive hooks
-			}
-			else {
-				// active hooks
-				console.log(git_hook);
-			}
-		});
-
 		vscode.workspace.openTextDocument(path.join(gitHookDir, hook.label)).then(doc => {
 			vscode.window.showTextDocument(doc);
 		});
-	})
+	});
 
-	let run_hook = vscode.commands.registerCommand('git-hooks.run_hook', (hook) => {
+	let runHook = vscode.commands.registerCommand('git-hooks.runHook', (hook) => {
 
 		let terminal: vscode.Terminal;
 
@@ -77,7 +65,7 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 		else {
 			terminal = vscode.window.createTerminal('git-hooks', '/bin/bash');
-		}
+		};
 		vscode.window.showInformationMessage('Running ' + hook.label);
 
 		terminal.sendText(`cd .git && cd hooks`);
@@ -97,46 +85,46 @@ export function activate(context: vscode.ExtensionContext) {
 
 	});
 
-	let toggle_hook = vscode.commands.registerCommand('git-hooks.toggle_hook', (hook) => {
+	let toggleHook = vscode.commands.registerCommand('git-hooks.toggleHook', (hook) => {
 
-		if (working_dir) {
-			const root_dir = working_dir.uri.fsPath;
-			const git_hooks_dir = root_dir + '/.git/hooks';
+		if (workingDir) {
+			const rootDir = workingDir.uri.fsPath;
+			const hooksDir = rootDir + '/.git/hooks';
 
-			let old_path = ""
-			let new_path = ""
+			let oldPath = "";
+			let newPath = "";
 
 			if (hook.label.indexOf('.sample') !== -1) {
-				old_path = path.join(git_hooks_dir, hook.label);
-				new_path = path.join(git_hooks_dir, hook.label.replace('.sample', ''));
+				oldPath = path.join(hooksDir, hook.label);
+				newPath = path.join(hooksDir, hook.label.replace('.sample', ''));
 			}
 			else {
-				old_path = path.join(git_hooks_dir, hook.label);
-				new_path = path.join(git_hooks_dir, hook.label + '.sample');
-			}
+				oldPath = path.join(hooksDir, hook.label);
+				newPath = path.join(hooksDir, hook.label + '.sample');
+			};
 
-			fs.rename(old_path, new_path, (err) => {
-				if (err) throw err;
+			fs.rename(oldPath, newPath, (err) => {
+				if (err) {
+					throw err;
+				};
 				vscode.window.registerTreeDataProvider(
 					'git_hooks_view',
-					new GitHooksProvider(working_dir.uri.fsPath)
-				)
-			})
-		}
+					new GitHooksProvider(workingDir.uri.fsPath)
+				);
+			});
+		};
+	});
 
-
-	})
-
-	let reload_hooks = vscode.commands.registerCommand('git-hooks.reload_hooks', () => {4
-		if(working_dir) {
+	let reloadHooks = vscode.commands.registerCommand('git-hooks.reloadHooks', () => {
+		if (workingDir) {
 			vscode.window.registerTreeDataProvider(
 				'git_hooks_view',
-				new GitHooksProvider(working_dir.uri.fsPath)
-			)
+				new GitHooksProvider(workingDir.uri.fsPath)
+			);
 		}
-	})
+	});
 
-	context.subscriptions.push(open_hooks, run_hook, toggle_hook, reload_hooks);
+	context.subscriptions.push(openHooks, runHook, toggleHook, reloadHooks);
 }
 
 
@@ -144,4 +132,4 @@ export function activate(context: vscode.ExtensionContext) {
 // this method is called when your extension is deactivated
 export function deactivate() {
 	console.log('git hooks are deactivate');
-}
+};

@@ -17,24 +17,24 @@
 		"menus": {
 			"view/title": [
 				{
-					"command": "git-hooks.reload_hooks",
+					"command": "git-hooks.reloadHooks",
 					"when": "view == git_hooks_view",
 					"group": "navigation"
 				}
 			],
 			"view/item/context": [
 				{
-					"command": "git-hooks.open_hook",
+					"command": "git-hooks.openHook",
 					"when": "view == git_hooks_view && viewItem == label",
 					"group": "inline"
 				},
 				{
-					"command": "git-hooks.run_hook",
+					"command": "git-hooks.runHook",
 					"when": "view == git_hooks_view && viewItem == label",
 					"group": "inline"
 				},
 				{
-					"command": "git-hooks.toggle_hook",
+					"command": "git-hooks.toggleHook",
 					"when": "view == git_hooks_view && viewItem == label",
 					"group": "inline"
 				}
@@ -60,22 +60,22 @@
 		},
 		"commands": [
 			{
-				"command": "git-hooks.open_hook",
+				"command": "git-hooks.openHook",
 				"title": "Open Hook",
 				"icon": "$(edit)"
 			},
 			{
-				"command": "git-hooks.run_hook",
+				"command": "git-hooks.runHook",
 				"title": "Run Hook",
 				"icon": "$(debug-start)"
 			},
 			{
-				"command": "git-hooks.toggle_hook",
+				"command": "git-hooks.toggleHook",
 				"title": "Toggle Hook",
 				"icon": "$(pin)"
 			},
 			{
-				"command": "git-hooks.reload_hooks",
+				"command": "git-hooks.reloadHooks",
 				"title": "Reload Hooks",
 				"icon": "$(timeline-refresh)"
 			}

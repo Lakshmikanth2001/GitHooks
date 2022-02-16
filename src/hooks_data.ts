@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import * as path from 'path'
+import * as path from 'path';
 import * as fs from 'fs';
 
 class Hook extends vscode.TreeItem {
@@ -13,25 +13,25 @@ class Hook extends vscode.TreeItem {
     //vscode Theme color green
 
     iconPath = new vscode.ThemeIcon('testing-passed-icon', new vscode.ThemeColor('testing.iconPassed'));
-    contextValue?: string | undefined = 'label'
+    contextValue?: string | undefined = 'label';
 }
 
-export function getHooksDir(working_dir: string): string {
-    return path.join(working_dir, '.git', 'hooks');
+export function getHooksDir(workingDir: string): string {
+    return path.join(workingDir, '.git', 'hooks');
 }
 
 export class GitHooksProvider implements vscode.TreeDataProvider<Hook>{
-    constructor(private workspaceRoot: string) { 
+    constructor(private workspaceRoot: string) {
         vscode.window.onDidChangeActiveTextEditor(() => this.onActiveEditorChanged());
         this.onActiveEditorChanged();
     }
 
     private onActiveEditorChanged(): void {
-        const working_dir = vscode.workspace.workspaceFolders?.[0] ?? '';
-        if(working_dir){
-            vscode.commands.executeCommand('setContext', 'workSpaceHasGit', this.workSpaceHasGit(working_dir.uri.fsPath));
+        const workingDir = vscode.workspace.workspaceFolders?.[0] ?? '';
+        if (workingDir) {
+            vscode.commands.executeCommand('setContext', 'workSpaceHasGit', this.workSpaceHasGit(workingDir.uri.fsPath));
         }
-        else{
+        else {
             vscode.commands.executeCommand('setContext', 'workSpaceHasGit', false);
         }
     }
@@ -52,11 +52,11 @@ export class GitHooksProvider implements vscode.TreeDataProvider<Hook>{
         }
 
         if (!element) {
-            let hook = new Hook('Git Hooks', '', vscode.TreeItemCollapsibleState.Collapsed)
-            hook.contextValue = 'root'
+            let hook = new Hook('Git Hooks', '', vscode.TreeItemCollapsibleState.Collapsed);
+            hook.contextValue = 'root';
             return Promise.resolve([
                 hook,
-            ])
+            ]);
         }
         else {
             return Promise.resolve(
@@ -72,28 +72,28 @@ export class GitHooksProvider implements vscode.TreeDataProvider<Hook>{
         if (this.pathExists(hooksPath)) {
             // read hooks path dir
             const hooks = fs.readdirSync(hooksPath);
-            const hooks_list: Hook[] = hooks.map((hook) => {
+            const hooksList: Hook[] = hooks.map((hook) => {
 
-                let hook_status: string;
-
-                if (hook.indexOf('.sample') !== -1) {
-                    hook_status = 'Inactive';
-                }
-                else {
-                    hook_status = "Active"
-                }
-                let hook_data = new Hook(hook, hook_status, vscode.TreeItemCollapsibleState.None);
+                let hookStatus: string;
 
                 if (hook.indexOf('.sample') !== -1) {
-                    hook_data.iconPath = new vscode.ThemeIcon('circle-large-outline');
+                    hookStatus = 'Inactive';
                 }
                 else {
-                    hook_data.iconPath = new vscode.ThemeIcon('testing-passed-icon', new vscode.ThemeColor('#RRGGBBAA'));
+                    hookStatus = "Active";
                 }
-                return hook_data;
+                let hookData = new Hook(hook, hookStatus, vscode.TreeItemCollapsibleState.None);
+
+                if (hook.indexOf('.sample') !== -1) {
+                    hookData.iconPath = new vscode.ThemeIcon('circle-large-outline');
+                }
+                else {
+                    hookData.iconPath = new vscode.ThemeIcon('testing-passed-icon', new vscode.ThemeColor('#RRGGBBAA'));
+                }
+                return hookData;
             });
 
-            return hooks_list
+            return hooksList;
         }
         else {
             vscode.window.showInformationMessage('No hooks in empty workspace');
@@ -101,11 +101,11 @@ export class GitHooksProvider implements vscode.TreeDataProvider<Hook>{
         }
 
     }
-    private workSpaceHasGit(working_dir: string | undefined): Boolean {
-        if (working_dir) {
-            let git_dir = path.join(working_dir, '.git');
+    private workSpaceHasGit(workingDir: string | undefined): Boolean {
+        if (workingDir) {
+            let gitDir = path.join(workingDir, '.git');
             // check whether git_dir exists or not
-            return this.pathExists(git_dir);
+            return this.pathExists(gitDir);
         }
         return false;
     }
