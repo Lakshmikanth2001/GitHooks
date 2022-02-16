@@ -3,6 +3,7 @@
 	"displayName": "git_hooks",
 	"description": "Integrating git hooks to vscode",
 	"version": "0.0.1",
+	"publisher": "lakshmikanthayyadevara",
 	"engines": {
 		"vscode": "^1.64.0"
 	},
