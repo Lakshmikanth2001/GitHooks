@@ -12,7 +12,11 @@
 	},
 	"repository": {
 		"type": "git",
-		"url": ""
+		"url": "https://github.com/Lakshmikanth2001/GitHooks"
+	},
+	"bugs": {
+		"email": "lakshmikanth2001@gmail.com",
+		"url": "https://github.com/Lakshmikanth2001/GitHooks/issues"
 	},
 	"author": {
 		"name": "Lakshmikanth Ayyadevara",
