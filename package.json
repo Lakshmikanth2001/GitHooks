@@ -1,11 +1,22 @@
 {
-	"name": "git-hooks",
-	"displayName": "git_hooks",
-	"description": "Integrating git hooks to vscode",
+	"name": "githooks",
+	"displayName": "GitHooks -- Simple VS-Code UI for git hooks",
+	"description": "Integrating git hooks to vscode UI",
 	"version": "0.0.1",
+	"license": "SEE LICENSE IN LICENSE",
 	"publisher": "lakshmikanthayyadevara",
+	"main": "./out/extension.js",
+	"icon": "assets/icon.png",
 	"engines": {
 		"vscode": "^1.64.0"
+	},
+	"repository": {
+		"type": "git",
+		"url": ""
+	},
+	"author": {
+		"name": "Lakshmikanth Ayyadevara",
+		"email": "lakshmikanth2001@gmail.com"
 	},
 	"categories": [
 		"Other"
@@ -13,7 +24,13 @@
 	"activationEvents": [
 		"onStartupFinished"
 	],
-	"main": "./out/extension.js",
+	"keywords": [
+		"git",
+		"hooks",
+		"githooks",
+		"gitHooks",
+		"git_hooks"
+	],
 	"contributes": {
 		"menus": {
 			"view/title": [
@@ -46,7 +63,7 @@
 				{
 					"id": "git_hooks",
 					"title": "Git Hooks",
-					"icon": "./src/git_hooks_icon.svg"
+					"icon": "assets/git_hooks_icon.svg"
 				}
 			]
 		},
