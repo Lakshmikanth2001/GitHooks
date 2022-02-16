@@ -11,8 +11,7 @@ class Hook extends vscode.TreeItem {
     }
 
     //vscode Theme color green
-
-    iconPath = new vscode.ThemeIcon('testing-passed-icon', new vscode.ThemeColor('testing.iconPassed'));
+    iconPath: vscode.ThemeIcon = new vscode.ThemeIcon('circle-large-outline');
     contextValue?: string | undefined = 'label';
 }
 
@@ -51,18 +50,22 @@ export class GitHooksProvider implements vscode.TreeDataProvider<Hook>{
             return Promise.resolve([]);
         }
 
+        const hooksPath = getHooksDir(this.workspaceRoot);
         if (!element) {
             let hook = new Hook('Git Hooks', '', vscode.TreeItemCollapsibleState.Collapsed);
             hook.contextValue = 'root';
+            fs.readdirSync(hooksPath).forEach(hook_file => {
+                if (hook_file.indexOf('.sample') === -1) {
+                    hook.iconPath = new vscode.ThemeIcon('testing-passed-icon', new vscode.ThemeColor('#RRGGBBAA'));
+                }
+            });
             return Promise.resolve([
                 hook,
             ]);
         }
         else {
             return Promise.resolve(
-                this.getHooks(
-                    path.join(this.workspaceRoot, '.git', 'hooks')
-                )
+                this.getHooks(hooksPath)
             );
         }
     }
@@ -84,11 +87,12 @@ export class GitHooksProvider implements vscode.TreeDataProvider<Hook>{
                 }
                 let hookData = new Hook(hook, hookStatus, vscode.TreeItemCollapsibleState.None);
 
-                if (hook.indexOf('.sample') !== -1) {
-                    hookData.iconPath = new vscode.ThemeIcon('circle-large-outline');
+                if (hook.indexOf('.sample') === -1) {
+                    // no .sample is found
+                    hookData.iconPath = new vscode.ThemeIcon('testing-passed-icon', new vscode.ThemeColor('#RRGGBBAA'));
                 }
                 else {
-                    hookData.iconPath = new vscode.ThemeIcon('testing-passed-icon', new vscode.ThemeColor('#RRGGBBAA'));
+                    hookData.iconPath = new vscode.ThemeIcon('circle-large-outline');
                 }
                 return hookData;
             });
