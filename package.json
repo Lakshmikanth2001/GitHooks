@@ -8,7 +8,7 @@
 	"main": "./out/extension.js",
 	"icon": "assets/icon.png",
 	"engines": {
-		"vscode": "^1.58.0"
+		"vscode": "^1.64.0"
 	},
 	"repository": {
 		"type": "git",
@@ -26,7 +26,7 @@
 		"Other"
 	],
 	"activationEvents": [
-		"onStartupFinished"
+		"workspaceContains:.git"
 	],
 	"keywords": [
 		"git",
@@ -101,7 +101,18 @@
 				"title": "Reload Hooks",
 				"icon": "$(timeline-refresh)"
 			}
-		]
+		],
+		"configuration":{
+			"type":"object",
+			"title": "GitHooks Configuration",
+			"properties": {
+				"GitHooks.supportedLanguages":{
+					"type":"array",
+					"default":["python", "bash", "node"],
+					"description": "List of supported languages for git hooks"
+				}
+			}
+		}
 	},
 	"scripts": {
 		"vscode:prepublish": "npm run compile",

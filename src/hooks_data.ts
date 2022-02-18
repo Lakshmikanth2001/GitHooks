@@ -21,17 +21,23 @@ export function getHooksDir(workingDir: string): string {
 
 export class GitHooksProvider implements vscode.TreeDataProvider<Hook>{
     constructor(private workspaceRoot: string) {
-        vscode.window.onDidChangeActiveTextEditor(() => this.onActiveEditorChanged());
-        this.onActiveEditorChanged();
+        vscode.workspace.onDidChangeWorkspaceFolders(e => this.onActivateWorkspaceChanged(e));
+        this.onActivateWorkspaceChanged(undefined);
     }
 
-    private onActiveEditorChanged(): void {
-        const workingDir = vscode.workspace.workspaceFolders?.[0] ?? '';
-        if (workingDir) {
-            vscode.commands.executeCommand('setContext', 'workSpaceHasGit', this.workSpaceHasGit(workingDir.uri.fsPath));
+    private onActivateWorkspaceChanged(e: vscode.WorkspaceFoldersChangeEvent | undefined): void {
+        if (e) {
+            console.log("onActivateWorkspaceChanged");
+            vscode.commands.executeCommand('setContext', 'workSpaceHasGit', this.workSpaceHasGit(e.added[0].uri.fsPath));
         }
         else {
-            vscode.commands.executeCommand('setContext', 'workSpaceHasGit', false);
+            const workingDir = vscode.workspace.workspaceFolders?.[0] ?? '';
+            if (workingDir) {
+                vscode.commands.executeCommand('setContext', 'workSpaceHasGit', this.workSpaceHasGit(workingDir.uri.fsPath));
+            }
+            else {
+                vscode.commands.executeCommand('setContext', 'workSpaceHasGit', false);
+            }
         }
     }
 
@@ -68,6 +74,11 @@ export class GitHooksProvider implements vscode.TreeDataProvider<Hook>{
                 this.getHooks(hooksPath)
             );
         }
+    }
+
+    private getSupportedLaunguages(): void {
+        // type of list of strings
+        const supportedLanguages: string[] = vscode.workspace.getConfiguration('GitHooks')?.['supportedLanguages'] ?? [];
     }
 
     private getHooks(hooksPath: string): Hook[] {

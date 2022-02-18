@@ -14,24 +14,14 @@ function getHooksDir(): string {
 	// get all files in .git folder
 	return path.join(workspaceFolder?.uri.fsPath ?? "", '.git', 'hooks');
 }
-
-function isActiveHook(hook: string) {
-	return hook.indexOf('.sample') === -1;
-}
-
-
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
-
-
-
 	// Use the console to output diagnostic information (console.log) and errors (console.error)
 	// This line of code will only be executed once when your extension is activated
 	console.log('Congratulations, your extension "git-hooks" is now active!');
 
 	const workingDir = vscode.workspace.workspaceFolders?.[0] ?? '';
-
 	if (workingDir) {
 		vscode.window.registerTreeDataProvider(
 			'git_hooks_view',
@@ -46,7 +36,10 @@ export function activate(context: vscode.ExtensionContext) {
 
 		const gitHookDir = getHooksDir();
 		vscode.workspace.openTextDocument(path.join(gitHookDir, hook.label)).then(doc => {
-			vscode.window.showTextDocument(doc);
+			vscode.window.showTextDocument(doc).then(editor => {
+				// create a vscode snippet
+				let snippetCode = editor.document.getText(new vscode.Range(new vscode.Position(0, 0), new vscode.Position(1, 0)));
+			});
 		});
 	});
 
@@ -120,7 +113,7 @@ export function activate(context: vscode.ExtensionContext) {
 			);
 		}
 	});
-
+	
 	context.subscriptions.push(openHooks, runHook, toggleHook, reloadHooks);
 }
 
