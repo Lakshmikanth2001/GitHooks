@@ -33,7 +33,10 @@
 		"hooks",
 		"githooks",
 		"gitHooks",
-		"git_hooks"
+		"git_hooks",
+		"git hooks",
+		"Git Hooks",
+		"Git hooks"
 	],
 	"contributes": {
 		"menus": {
@@ -59,6 +62,22 @@
 					"command": "git-hooks.toggleHook",
 					"when": "view == git_hooks_view && viewItem == label",
 					"group": "inline"
+				},
+				{
+					"command": "git-hooks.openHook",
+					"when": "view == git_hooks_view && viewItem == label"
+				},
+				{
+					"command": "git-hooks.runHook",
+					"when": "view == git_hooks_view && viewItem == label"
+				},
+				{
+					"command": "git-hooks.toggleHook",
+					"when": "view == git_hooks_view && viewItem == label"
+				},
+				{
+					"command": "git-hooks.hookDescription",
+					"when": "view == git_hooks_view && viewItem == label"
 				}
 			]
 		},
@@ -100,6 +119,10 @@
 				"command": "git-hooks.reloadHooks",
 				"title": "Reload Hooks",
 				"icon": "$(timeline-refresh)"
+			},
+			{
+				"command": "git-hooks.hookDescription",
+				"title": "Hook Description"
 			}
 		],
 		"configuration":{
@@ -112,7 +135,13 @@
 					"description": "List of supported languages for git hooks"
 				}
 			}
-		}
+		},
+		"snippets": [
+			{
+				"language": "python",
+				"path": "./src/snippets/python.json"
+			}
+		]
 	},
 	"scripts": {
 		"vscode:prepublish": "npm run compile",
