@@ -3,133 +3,120 @@ import * as path from 'path';
 import * as fs from 'fs';
 
 class Hook extends vscode.TreeItem {
-    constructor(public readonly label: string,
-        private status: string,
-        public readonly collapsibleState: vscode.TreeItemCollapsibleState) {
-        super(label, collapsibleState);
-        this.tooltip = label + '\n' + status;
-    }
+	constructor(
+		public readonly label: string,
+		private status: string,
+		public readonly collapsibleState: vscode.TreeItemCollapsibleState,
+	) {
+		super(label, collapsibleState);
+		this.tooltip = label + '\n' + status;
+	}
 
-    //vscode Theme color green
-    iconPath: vscode.ThemeIcon = new vscode.ThemeIcon('circle-large-outline');
-    contextValue?: string | undefined = 'label';
+	//vscode Theme color green
+	iconPath: vscode.ThemeIcon = new vscode.ThemeIcon('circle-large-outline');
+	contextValue?: string | undefined = 'label';
 }
 
 export function getHooksDir(workingDir: string): string {
-    return path.join(workingDir, '.git', 'hooks');
+	return path.join(workingDir, '.git', 'hooks');
 }
 
-export class GitHooksProvider implements vscode.TreeDataProvider<Hook>{
-    constructor(private workspaceRoot: string) {
-        vscode.workspace.onDidChangeWorkspaceFolders(e => this.onActivateWorkspaceChanged(e));
-        this.onActivateWorkspaceChanged(undefined);
-    }
+export class GitHooksProvider implements vscode.TreeDataProvider<Hook> {
+	constructor(private workspaceRoot: string) {
+		vscode.workspace.onDidChangeWorkspaceFolders((e) => this.onActivateWorkspaceChanged(e));
+		this.onActivateWorkspaceChanged(undefined);
+	}
 
-    private onActivateWorkspaceChanged(e: vscode.WorkspaceFoldersChangeEvent | undefined): void {
-        if (e) {
-            console.log("onActivateWorkspaceChanged");
-            vscode.commands.executeCommand('setContext', 'workSpaceHasGit', this.workSpaceHasGit(e.added[0].uri.fsPath));
-        }
-        else {
-            const workingDir = vscode.workspace.workspaceFolders?.[0] ?? '';
-            if (workingDir) {
-                vscode.commands.executeCommand('setContext', 'workSpaceHasGit', this.workSpaceHasGit(workingDir.uri.fsPath));
-            }
-            else {
-                vscode.commands.executeCommand('setContext', 'workSpaceHasGit', false);
-            }
-        }
-    }
+	private onActivateWorkspaceChanged(e: vscode.WorkspaceFoldersChangeEvent | undefined): void {
+		if (e) {
+			console.log('onActivateWorkspaceChanged');
+			vscode.commands.executeCommand('setContext', 'workSpaceHasGit', this.workSpaceHasGit(e.added[0].uri.fsPath));
+		} else {
+			const workingDir = vscode.workspace.workspaceFolders?.[0] ?? '';
+			if (workingDir) {
+				vscode.commands.executeCommand('setContext', 'workSpaceHasGit', this.workSpaceHasGit(workingDir.uri.fsPath));
+			} else {
+				vscode.commands.executeCommand('setContext', 'workSpaceHasGit', false);
+			}
+		}
+	}
 
-    getTreeItem(element: Hook): vscode.TreeItem {
-        return element;
-    }
+	getTreeItem(element: Hook): vscode.TreeItem {
+		return element;
+	}
 
-    getChildren(element?: Hook): Thenable<Hook[]> {
+	getChildren(element?: Hook): Thenable<Hook[]> {
+		if (!this.workspaceRoot) {
+			vscode.window.showInformationMessage('Empty workspace can not have git hooks');
+			return Promise.resolve([]);
+		} else if (!this.pathExists(path.join(this.workspaceRoot, '.git'))) {
+			vscode.window.showInformationMessage('No git repository in workspace');
+			return Promise.resolve([]);
+		}
 
-        if (!this.workspaceRoot) {
-            vscode.window.showInformationMessage('Empty workspace can not have git hooks');
-            return Promise.resolve([]);
-        }
-        else if (!this.pathExists(path.join(this.workspaceRoot, '.git'))) {
-            vscode.window.showInformationMessage('No git repository in workspace');
-            return Promise.resolve([]);
-        }
+		const hooksPath = getHooksDir(this.workspaceRoot);
+		if (!element) {
+			let hook = new Hook('Git Hooks', '', vscode.TreeItemCollapsibleState.Collapsed);
+			hook.contextValue = 'root';
+			fs.readdirSync(hooksPath).forEach((hookFile) => {
+				if (hookFile.indexOf('.sample') === -1) {
+					hook.iconPath = new vscode.ThemeIcon('testing-passed-icon', new vscode.ThemeColor('#RRGGBBAA'));
+				}
+			});
+			return Promise.resolve([hook]);
+		} else {
+			return Promise.resolve(this.getHooks(hooksPath));
+		}
+	}
 
-        const hooksPath = getHooksDir(this.workspaceRoot);
-        if (!element) {
-            let hook = new Hook('Git Hooks', '', vscode.TreeItemCollapsibleState.Collapsed);
-            hook.contextValue = 'root';
-            fs.readdirSync(hooksPath).forEach(hookFile => {
-                if (hookFile.indexOf('.sample') === -1) {
-                    hook.iconPath = new vscode.ThemeIcon('testing-passed-icon', new vscode.ThemeColor('#RRGGBBAA'));
-                }
-            });
-            return Promise.resolve([
-                hook,
-            ]);
-        }
-        else {
-            return Promise.resolve(
-                this.getHooks(hooksPath)
-            );
-        }
-    }
+	private getSupportedLaunguages(): void {
+		// type of list of strings
+		const supportedLanguages: string[] = vscode.workspace.getConfiguration('GitHooks')?.['supportedLanguages'] ?? [];
+	}
 
-    private getSupportedLaunguages(): void {
-        // type of list of strings
-        const supportedLanguages: string[] = vscode.workspace.getConfiguration('GitHooks')?.['supportedLanguages'] ?? [];
-    }
+	private getHooks(hooksPath: string): Hook[] {
+		if (this.pathExists(hooksPath)) {
+			// read hooks path dir
+			const hooks = fs.readdirSync(hooksPath);
+			const hooksList: Hook[] = hooks.map((hook) => {
+				let hookStatus: string;
 
-    private getHooks(hooksPath: string): Hook[] {
+				if (hook.indexOf('.sample') !== -1) {
+					hookStatus = 'Inactive';
+				} else {
+					hookStatus = 'Active';
+				}
+				let hookData = new Hook(hook, hookStatus, vscode.TreeItemCollapsibleState.None);
 
-        if (this.pathExists(hooksPath)) {
-            // read hooks path dir
-            const hooks = fs.readdirSync(hooksPath);
-            const hooksList: Hook[] = hooks.map((hook) => {
+				if (hook.indexOf('.sample') === -1) {
+					// no .sample is found
+					hookData.iconPath = new vscode.ThemeIcon('testing-passed-icon', new vscode.ThemeColor('#RRGGBBAA'));
+				} else {
+					hookData.iconPath = new vscode.ThemeIcon('circle-large-outline');
+				}
+				return hookData;
+			});
 
-                let hookStatus: string;
-
-                if (hook.indexOf('.sample') !== -1) {
-                    hookStatus = 'Inactive';
-                }
-                else {
-                    hookStatus = "Active";
-                }
-                let hookData = new Hook(hook, hookStatus, vscode.TreeItemCollapsibleState.None);
-
-                if (hook.indexOf('.sample') === -1) {
-                    // no .sample is found
-                    hookData.iconPath = new vscode.ThemeIcon('testing-passed-icon', new vscode.ThemeColor('#RRGGBBAA'));
-                }
-                else {
-                    hookData.iconPath = new vscode.ThemeIcon('circle-large-outline');
-                }
-                return hookData;
-            });
-
-            return hooksList;
-        }
-        else {
-            vscode.window.showInformationMessage('No hooks in empty workspace');
-            return [];
-        }
-
-    }
-    private workSpaceHasGit(workingDir: string | undefined): Boolean {
-        if (workingDir) {
-            let gitDir = path.join(workingDir, '.git');
-            // check whether git_dir exists or not
-            return this.pathExists(gitDir);
-        }
-        return false;
-    }
-    private pathExists(p: string): boolean {
-        try {
-            fs.accessSync(p);
-        } catch (err) {
-            return false;
-        }
-        return true;
-    }
+			return hooksList;
+		} else {
+			vscode.window.showInformationMessage('No hooks in empty workspace');
+			return [];
+		}
+	}
+	private workSpaceHasGit(workingDir: string | undefined): Boolean {
+		if (workingDir) {
+			let gitDir = path.join(workingDir, '.git');
+			// check whether git_dir exists or not
+			return this.pathExists(gitDir);
+		}
+		return false;
+	}
+	private pathExists(p: string): boolean {
+		try {
+			fs.accessSync(p);
+		} catch (err) {
+			return false;
+		}
+		return true;
+	}
 }
