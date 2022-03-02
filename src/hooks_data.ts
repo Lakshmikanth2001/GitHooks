@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
 
-class Hook extends vscode.TreeItem {
+export class Hook extends vscode.TreeItem {
 	constructor(
 		public readonly label: string,
 		private status: string,
@@ -21,6 +21,12 @@ export function getHooksDir(workingDir: string): string {
 	return path.join(workingDir, '.git', 'hooks');
 }
 
+export function regesterHookTreeDataProvider() {
+	const workingDir = vscode.workspace.workspaceFolders?.[0] ?? '';
+	if (workingDir) {
+		vscode.window.registerTreeDataProvider('git_hooks_view', new GitHooksProvider(workingDir.uri.fsPath));
+	}
+}
 export class GitHooksProvider implements vscode.TreeDataProvider<Hook> {
 	constructor(private workspaceRoot: string) {
 		vscode.workspace.onDidChangeWorkspaceFolders((e) => this.onActivateWorkspaceChanged(e));
