@@ -8,10 +8,10 @@
 * Edit git hook in current workspace
 
 ## Git Hooks Layout
-![](https://githooks.s3.ap-south-1.amazonaws.com/2022-02-16+(1).png)
+![](https://githooks.s3.ap-south-1.amazonaws.com/hook_options.png)
 
-## Open Git Hooks
-![](https://githooks.s3.ap-south-1.amazonaws.com/2022-02-16+(3).png)
+## Git Hooks Description
+![](https://githooks.s3.ap-south-1.amazonaws.com/hook_hints.png)
 
 ## Run Git Hooks
-![](https://githooks.s3.ap-south-1.amazonaws.com/2022-02-16+(2).png)
+![](https://githooks.s3.ap-south-1.amazonaws.com/run_hook.png)
