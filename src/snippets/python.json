@@ -1,7 +1,10 @@
 {
-    "PyMySQL-Database-Connection": {
+    "PyMySQL-DB-Connection-GitHook": {
         "scope": "python",
-        "prefix": "pymysql-git-hook",
+        "prefix": [
+            "pymysql",
+            "PyMySQL"
+        ],
         "body": [
             "import pymysql",
             "class Database:",
@@ -28,5 +31,20 @@
             "            return result"
         ],
         "description": "PymySQL database connection"
+    },
+    "Python-PreCommit-Hook": {
+        "scope": "python",
+        "prefix": [
+            "preCommitHook"
+        ],
+        "body": [
+            "#!${1|/usr/bin/env python,/usr/bin/env python3,/usr/bin python,/usr/bin python3|}",
+            "import os",
+            "import sys",
+            "if __name__ == \"__main__\":",
+            "    exit_code = os.system(${2|'exec git diff-index --check --cached \\$against -- '|})",
+            "    sys.exit(exit_code)"
+        ],
+        "description": "PreCommit Hook written in python"
     }
 }

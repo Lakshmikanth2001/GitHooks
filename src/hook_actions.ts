@@ -3,6 +3,8 @@ import * as fs from 'fs';
 import * as vscode from 'vscode';
 import * as path from 'path';
 
+const POST_HOOKS = ['pre-receive', 'update', 'proc-receive', 'post-receive', 'post-update'];
+
 function getHooksDir(): string {
 	// get all files in current workspace
 	const workspaceFolders = vscode.workspace.workspaceFolders;
@@ -39,10 +41,11 @@ function runHook(hook: Hook) {
 	vscode.window.showInformationMessage('Running ' + hook.label);
 
 	terminal.sendText(`cd .git && cd hooks`);
-	terminal.sendText(`cat ${hook.label} > ${hook.label}.sh`);
-	terminal.sendText(`chmod +x ${hook.label}.sh`);
-	terminal.sendText(`bash ${hook.label}.sh`);
-	terminal.sendText(`rm ${hook.label}.sh`);
+	terminal.sendText(`cat ${hook.label} > test_${hook.label}`);
+	terminal.sendText(`chmod +x test_${hook.label}`);
+	terminal.sendText(`cd .. && cd ..`);
+	terminal.sendText(`./.git/hooks/test_${hook.label}`);
+	terminal.sendText(`rm test_${hook.label}`);
 
 	vscode.window.terminals.forEach((terminal) => {
 		if (terminal.name === 'git-hooks') {
@@ -77,11 +80,30 @@ function toggleHook(hook: Hook) {
 			}
 			vscode.window.registerTreeDataProvider('git_hooks_view', new GitHooksProvider(workingDir.uri.fsPath));
 		});
+
+		// close a particular file from window
+		vscode.window.visibleTextEditors.forEach(async (editor) => {
+			if (editor.document.uri.fsPath === oldPath) {
+				// close the current 
+				// select an editor
+				await vscode.window.showTextDocument(editor.document);
+				await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
+
+			}
+		});
+
 	}
 }
 
 function hookDescription(hook: Hook) {
-	vscode.window.showInformationMessage(hook.label);
+	let hookLabel = hook.label.replace('.sample', '');
+
+	if (POST_HOOKS.indexOf(hookLabel) !== -1) {
+		vscode.env.openExternal(vscode.Uri.parse(`https://git-scm.com/docs/githooks#${hookLabel}`));
+	} else {
+		hookLabel = hookLabel.replace(/-/g, '_');
+		vscode.env.openExternal(vscode.Uri.parse(`https://git-scm.com/docs/githooks#_${hookLabel}`));
+	}
 }
 
 function reloadHooks() {

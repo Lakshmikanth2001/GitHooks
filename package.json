@@ -131,7 +131,7 @@
 			"properties": {
 				"GitHooks.supportedLanguages":{
 					"type":"array",
-					"default":["python", "bash", "node"],
+					"default":["python", "bash", "perl"],
 					"description": "List of supported languages for git hooks"
 				}
 			}
