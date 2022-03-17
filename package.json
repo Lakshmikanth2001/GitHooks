@@ -2,7 +2,7 @@
 	"name": "githooks",
 	"displayName": "GitHooks -- Simple VS-Code UI for git hooks",
 	"description": "Integrating git hooks to vscode UI",
-	"version": "0.0.6",
+	"version": "0.1.0",
 	"license": "SEE LICENSE IN LICENSE",
 	"publisher": "lakshmikanthayyadevara",
 	"main": "./out/extension.js",
@@ -125,13 +125,17 @@
 				"title": "Hook Description"
 			}
 		],
-		"configuration":{
-			"type":"object",
+		"configuration": {
+			"type": "object",
 			"title": "GitHooks Configuration",
 			"properties": {
-				"GitHooks.supportedLanguages":{
-					"type":"array",
-					"default":["python", "bash", "perl"],
+				"GitHooks.supportedLanguages": {
+					"type": "array",
+					"default": [
+						"python",
+						"bash",
+						"perl"
+					],
 					"description": "List of supported languages for git hooks"
 				}
 			}
