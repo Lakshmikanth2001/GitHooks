@@ -10,10 +10,10 @@
             "class Database:",
             "",
             "    database_cred = {",
-            "        \"host\": \"localhost\",",
-            "        \"user\": \"root\",",
-            "        \"password\": \"sitarama_123\",",
-            "        \"database\": \"faculty_profile\",",
+            "        \"host\": \"#HOST#\",",
+            "        \"user\": \"#USER#\",",
+            "        \"password\": \"#PASSWORD#\",",
+            "        \"database\": \"#DATABASE#\",",
             "        \"cursorclass\": pymysql.cursors.DictCursor",
             "    }",
             "",
@@ -30,7 +30,7 @@
             "            result = cursor.fetchall()",
             "            return result"
         ],
-        "description": "PymySQL database connection"
+        "description": "PyMySQL database connection"
     },
     "Python-PreCommit-Hook": {
         "scope": "python",
