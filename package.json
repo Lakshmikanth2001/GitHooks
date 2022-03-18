@@ -32,7 +32,8 @@
 		"git",
 		"githooks",
 		"gitHooks",
-		"git_hooks"
+		"git_hooks",
+		"git hooks"
 	],
 	"contributes": {
 		"menus": {
@@ -131,7 +132,13 @@
 					"description": "List of supported languages for git hooks"
 				}
 			}
-		}
+		},
+		"snippets": [
+			{
+				"language": "python",
+				"path": "./src/snippets/python.json"
+			}
+		]
 	},
 	"scripts": {
 		"vscode:prepublish": "npm run compile",

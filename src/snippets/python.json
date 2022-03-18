@@ -1,0 +1,50 @@
+{
+    "PyMySQL-DB-Connection-GitHook": {
+        "scope": "python",
+        "prefix": [
+            "pymysql",
+            "PyMySQL"
+        ],
+        "body": [
+            "import pymysql",
+            "class Database:",
+            "",
+            "    database_cred = {",
+            "        \"host\": \"#HOST#\",",
+            "        \"user\": \"#USER#\",",
+            "        \"password\": \"#PASSWORD#\",",
+            "        \"database\": \"#DATABASE#\",",
+            "        \"cursorclass\": pymysql.cursors.DictCursor",
+            "    }",
+            "",
+            "    def __init__(self, database_cred:dict = None):",
+            "        if database_cred:",
+            "            self.conn = pymysql.connect(**database_cred)",
+            "        else:",
+            "            self.conn = pymysql.connect(**self.database_cred)",
+            "",
+            "    def run_qry(self, sql: str):",
+            "        with self.conn.cursor() as cursor:",
+            "            cursor.execute(sql)",
+            "            self.conn.commit()",
+            "            result = cursor.fetchall()",
+            "            return result"
+        ],
+        "description": "PyMySQL database connection"
+    },
+    "Python-PreCommit-Hook": {
+        "scope": "python",
+        "prefix": [
+            "preCommitHook"
+        ],
+        "body": [
+            "#!${1|/usr/bin/env python,/usr/bin/env python3,/usr/bin python,/usr/bin python3|}",
+            "import os",
+            "import sys",
+            "if __name__ == \"__main__\":",
+            "    exit_code = os.system(${2|'exec git diff-index --check --cached \\$against -- '|})",
+            "    sys.exit(exit_code)"
+        ],
+        "description": "PreCommit Hook written in python"
+    }
+}
