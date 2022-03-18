@@ -135,13 +135,7 @@
 					"description": "List of supported languages for git hooks"
 				}
 			}
-		},
-		"snippets": [
-			{
-				"language": "python",
-				"path": "./src/snippets/python.json"
-			}
-		]
+		}
 	},
 	"scripts": {
 		"vscode:prepublish": "npm run compile",
