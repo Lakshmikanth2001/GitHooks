@@ -33,7 +33,8 @@
 		"githooks",
 		"gitHooks",
 		"git_hooks",
-		"git hooks"
+		"git hooks",
+		"git hook"
 	],
 	"contributes": {
 		"menus": {
