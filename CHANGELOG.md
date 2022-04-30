@@ -10,3 +10,8 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 - Added `PyMySQL` & `PreCommit hook` Python Snippets
 - Added `Hook Description` for each git hook
 - Using user defined shell to run git hooks
+
+### [0.0.4] - 2022-05-04
+- Included Context of Tree Elements
+- Added SCM display to the extension
+- Added Configuration to toggle the display between `SCM` and `ActivityBar`

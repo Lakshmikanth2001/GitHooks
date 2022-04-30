@@ -9,6 +9,15 @@ function setEditorLaunguage(editor: vscode.TextEditor, language: string) {
 	vscode.languages.setTextDocumentLanguage(editor.document, language);
 }
 
+function toggleView() {
+	// moving the extension from activity bar to Source Control view or vice versa
+	const viewContainerDisplay = vscode.workspace.getConfiguration('GitHooks')?.['viewContainerDisplay'];
+	// change configuration of vscode
+	vscode.workspace
+		.getConfiguration('GitHooks')
+		?.update('viewContainerDisplay', !viewContainerDisplay, vscode.ConfigurationTarget.Global);
+}
+
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
@@ -31,18 +40,33 @@ export function activate(context: vscode.ExtensionContext) {
 			}
 		}
 	});
-	
+	vscode.workspace.onDidChangeConfiguration((configChange) => {
+		// get viewContainerDisplay fro configChange
+		if (configChange.affectsConfiguration('GitHooks.viewContainerDisplay')) {
+			const viewContainerDisplay = vscode.workspace.getConfiguration('GitHooks')?.['viewContainerDisplay'] ?? true;
+			if (viewContainerDisplay) {
+				vscode.window.showInformationMessage('GitHooks are now moved to activity bar of vscode');
+			} else {
+				vscode.window.showInformationMessage('GitHooks are now moved to Source Control view of vscode');
+			}
+			vscode.commands.executeCommand('setContext', 'GitHooks.viewContainerDisplay', viewContainerDisplay);
+		}
+	});
 	regesterHookTreeDataProvider();
 
 	vscode.workspace.onDidOpenTextDocument((e) => {
 		initialAnnotation();
 	});
-	
+	// get workspace Extension context
+	const viewContainerDisplay = vscode.workspace.getConfiguration('GitHooks')?.['viewContainerDisplay'] ?? true;
+	vscode.commands.executeCommand('setContext', 'GitHooks.viewContainerDisplay', viewContainerDisplay);
+	// add githooks to vscode source control view
 	context.subscriptions.push(vscode.commands.registerCommand('git-hooks.runHook', runHook));
 	context.subscriptions.push(vscode.commands.registerCommand('git-hooks.openHook', openHook));
 	context.subscriptions.push(vscode.commands.registerCommand('git-hooks.toggleHook', toggleHook));
 	context.subscriptions.push(vscode.commands.registerCommand('git-hooks.reloadHooks', reloadHooks));
 	context.subscriptions.push(vscode.commands.registerCommand('git-hooks.hookDescription', hookDescription));
+	context.subscriptions.push(vscode.commands.registerCommand('git-hooks.toggleView', toggleView));
 }
 
 // this method is called when your extension is deactivated

@@ -2,7 +2,7 @@
 	"name": "githooks",
 	"displayName": "GitHooks -- Simple VS-Code UI for git hooks",
 	"description": "Integrating git hooks to vscode UI",
-	"version": "0.0.3",
+	"version": "0.0.4",
 	"license": "SEE LICENSE IN LICENSE",
 	"publisher": "lakshmikanthayyadevara",
 	"main": "./out/extension.js",
@@ -41,41 +41,46 @@
 			"view/title": [
 				{
 					"command": "git-hooks.reloadHooks",
-					"when": "view == git_hooks_view",
+					"when": "view == git_hooks_view||view == git_hooks_scm",
+					"group": "navigation"
+				},
+				{
+					"command": "git-hooks.toggleView",
+					"when": "view == git_hooks_view||view == git_hooks_scm",
 					"group": "navigation"
 				}
 			],
 			"view/item/context": [
 				{
 					"command": "git-hooks.openHook",
-					"when": "view == git_hooks_view && viewItem == label",
+					"when": "viewItem == 'hook' && view == git_hooks_view||view == git_hooks_scm",
 					"group": "inline"
 				},
 				{
 					"command": "git-hooks.runHook",
-					"when": "view == git_hooks_view && viewItem == label",
+					"when": "viewItem == 'hook' && view == git_hooks_view||view == git_hooks_scm",
 					"group": "inline"
 				},
 				{
 					"command": "git-hooks.toggleHook",
-					"when": "view == git_hooks_view && viewItem == label",
+					"when": "viewItem == 'hook' && view == git_hooks_view||view == git_hooks_scm",
 					"group": "inline"
 				},
 				{
 					"command": "git-hooks.openHook",
-					"when": "view == git_hooks_view && viewItem == label"
+					"when": "viewItem == 'hook' && view == git_hooks_view||view == git_hooks_scm"
 				},
 				{
 					"command": "git-hooks.runHook",
-					"when": "view == git_hooks_view && viewItem == label"
+					"when": "viewItem == 'hook' && view == git_hooks_view||view == git_hooks_scm"
 				},
 				{
 					"command": "git-hooks.toggleHook",
-					"when": "view == git_hooks_view && viewItem == label"
+					"when": "viewItem == 'hook' && view == git_hooks_view||view == git_hooks_scm"
 				},
 				{
 					"command": "git-hooks.hookDescription",
-					"when": "view == git_hooks_view && viewItem == label"
+					"when": "viewItem == 'hook' && view == git_hooks_view||view == git_hooks_scm"
 				}
 			]
 		},
@@ -93,7 +98,14 @@
 				{
 					"id": "git_hooks_view",
 					"name": "Git Hooks",
-					"when": "workSpaceHasGit"
+					"when": "workSpaceHasGit && GitHooks.viewContainerDisplay"
+				}
+			],
+			"scm": [
+				{
+					"id":"git_hooks_scm",
+					"name":"Git Hooks",
+					"when": "workSpaceHasGit && !GitHooks.viewContainerDisplay"
 				}
 			]
 		},
@@ -121,16 +133,21 @@
 			{
 				"command": "git-hooks.hookDescription",
 				"title": "Hook Description"
+			},
+			{
+				"command": "git-hooks.toggleView",
+				"title": "Change Extension View",
+				"icon":"$(source-control)"
 			}
 		],
 		"configuration":{
 			"type":"object",
-			"title": "GitHooks Configuration",
+			"title": "GitHook Settings",
 			"properties": {
-				"GitHooks.supportedLanguages":{
-					"type":"array",
-					"default":["python", "bash", "perl"],
-					"description": "List of supported languages for git hooks"
+				"GitHooks.viewContainerDisplay":{
+					"type":"boolean",
+					"default":true,
+					"description": "Display GitHook icon in activity bar"
 				}
 			}
 		},

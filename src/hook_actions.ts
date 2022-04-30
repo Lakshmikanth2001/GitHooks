@@ -78,13 +78,14 @@ function toggleHook(hook: Hook) {
 			if (err) {
 				throw err;
 			}
-			vscode.window.registerTreeDataProvider('git_hooks_view', new GitHooksProvider(workingDir.uri.fsPath));
+			vscode.window.registerTreeDataProvider('git_hooks_view', new GitHooksProvider(workingDir.uri.fsPath, false));
+			vscode.window.registerTreeDataProvider('git_hooks_scm', new GitHooksProvider(workingDir.uri.fsPath, true));
 		});
 
 		// close a particular file from window
 		vscode.window.visibleTextEditors.forEach(async (editor) => {
 			if (editor.document.uri.fsPath === oldPath) {
-				// close the current 
+				// close the current
 				// select an editor
 				await vscode.window.showTextDocument(editor.document);
 				await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
@@ -109,7 +110,9 @@ function hookDescription(hook: Hook) {
 function reloadHooks() {
 	const workingDir = vscode.workspace.workspaceFolders?.[0] ?? '';
 	if (workingDir) {
-		vscode.window.registerTreeDataProvider('git_hooks_view', new GitHooksProvider(workingDir.uri.fsPath));
+		vscode.window.registerTreeDataProvider('git_hooks_view', new GitHooksProvider(workingDir.uri.fsPath, false));
+		vscode.window.registerTreeDataProvider('git_hooks_scm', new GitHooksProvider(workingDir.uri.fsPath, true));
+
 	}
 }
 

@@ -14,7 +14,7 @@ export class Hook extends vscode.TreeItem {
 
 	//vscode Theme color green
 	iconPath: vscode.ThemeIcon = new vscode.ThemeIcon('circle-large-outline');
-	contextValue?: string | undefined = 'label';
+	contextValue?: string | undefined = 'hook';
 }
 
 export function getHooksDir(workingDir: string): string {
@@ -24,11 +24,12 @@ export function getHooksDir(workingDir: string): string {
 export function regesterHookTreeDataProvider() {
 	const workingDir = vscode.workspace.workspaceFolders?.[0] ?? '';
 	if (workingDir) {
-		vscode.window.registerTreeDataProvider('git_hooks_view', new GitHooksProvider(workingDir.uri.fsPath));
+		vscode.window.registerTreeDataProvider('git_hooks_view', new GitHooksProvider(workingDir.uri.fsPath, false));
+		vscode.window.registerTreeDataProvider('git_hooks_scm', new GitHooksProvider(workingDir.uri.fsPath, true));
 	}
 }
 export class GitHooksProvider implements vscode.TreeDataProvider<Hook> {
-	constructor(private workspaceRoot: string) {
+	constructor(private workspaceRoot: string, private isFromScm: boolean) {
 		vscode.workspace.onDidChangeWorkspaceFolders((e) => this.onActivateWorkspaceChanged(e));
 		this.onActivateWorkspaceChanged(undefined);
 	}
@@ -61,11 +62,18 @@ export class GitHooksProvider implements vscode.TreeDataProvider<Hook> {
 		}
 
 		const hooksPath = getHooksDir(this.workspaceRoot);
+
+		if(this.isFromScm){
+			// no need of root node in scm view
+			return Promise.resolve(this.getHooks(hooksPath));
+		}
+
 		if (!element) {
 			let hook = new Hook('Git Hooks', '', vscode.TreeItemCollapsibleState.Collapsed);
 			hook.contextValue = 'root';
 			fs.readdirSync(hooksPath).forEach((hookFile) => {
 				if (hookFile.indexOf('.sample') === -1) {
+					// if the hook is activated
 					hook.iconPath = new vscode.ThemeIcon('testing-passed-icon', new vscode.ThemeColor('#RRGGBBAA'));
 				}
 			});

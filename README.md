@@ -1,11 +1,21 @@
 # Git Hooks in VS-Code
 ## This extension provides simple UI to view and activate git hook in your current workspace
 
+<br />
+
 # Features
 
-* View git hooksin current workspace
+* View Git Hooks in current workspace
 * Activate git hooks in current workspace
 * Edit git hook in current workspace
+
+<br />
+
+## Git Hooks in VS-Code Source Control
+
+* Toggle Git Hooks view between activity bar and SCM view using git icon on top right
+
+![](https://githooks.s3.ap-south-1.amazonaws.com/2022-04-30.png)
 
 ## Git Hooks Layout
 ![](https://githooks.s3.ap-south-1.amazonaws.com/hook_options.png)
