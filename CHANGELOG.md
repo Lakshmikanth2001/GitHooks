@@ -15,3 +15,6 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 - Included Context of Tree Elements
 - Added SCM display to the extension
 - Added Configuration to toggle the display between `SCM` and `ActivityBar`
+
+### [0.0.5] - 2022-05-05
+- Bug fix for runing hook using `terminal.sendText`

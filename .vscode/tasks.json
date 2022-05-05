@@ -15,6 +15,15 @@
 				"kind": "build",
 				"isDefault": true
 			}
+		},
+		{
+			// make a buid task by executing the shell commands
+			"label": "package extension",
+			"type": "shell",
+			"command": "vsce package",
+			"group": {
+				"kind": "build",
+			},
 		}
 	]
 }

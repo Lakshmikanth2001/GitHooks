@@ -45,7 +45,7 @@ function runHook(hook: Hook) {
 	terminal.sendText(`chmod +x test_${hook.label}`);
 	terminal.sendText(`cd .. && cd ..`);
 	terminal.sendText(`./.git/hooks/test_${hook.label}`);
-	terminal.sendText(`rm test_${hook.label}`);
+	terminal.sendText(`rm ./.git/hooks/test_${hook.label}`);
 
 	vscode.window.terminals.forEach((terminal) => {
 		if (terminal.name === 'git-hooks') {

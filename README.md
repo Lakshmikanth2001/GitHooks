@@ -9,10 +9,13 @@
 * Activate git hooks in current workspace
 * Edit git hook in current workspace
 
-<br />
+
+
+## Run Git Hooks
+* made a bug fix for running git hooks
+![](https://githooks.s3.ap-south-1.amazonaws.com/run_hook.png)
 
 ## Git Hooks in VS-Code Source Control
-
 * Toggle Git Hooks view between activity bar and SCM view using git icon on top right
 
 ![](https://githooks.s3.ap-south-1.amazonaws.com/2022-04-30.png)
@@ -22,6 +25,3 @@
 
 ## Git Hooks Description
 ![](https://githooks.s3.ap-south-1.amazonaws.com/hook_hints.png)
-
-## Run Git Hooks
-![](https://githooks.s3.ap-south-1.amazonaws.com/run_hook.png)
