@@ -1,7 +1,7 @@
 {
 	"name": "githooks",
 	"displayName": "GitHooks -- Simple VS-Code UI for git hooks",
-	"description": "Integrating git hooks to vscode UI",
+	"description": "Integrating Git Hooks to vscode UI; Can View, Edit and Run your local Git Hooks",
 	"version": "0.0.5",
 	"license": "SEE LICENSE IN LICENSE",
 	"publisher": "lakshmikanthayyadevara",
@@ -30,14 +30,38 @@
 	],
 	"keywords": [
 		"git",
+		"Git",
 		"githooks",
 		"gitHooks",
 		"git_hooks",
 		"git hooks",
-		"git hook"
+		"git hook",
+		"Git Hooks"
 	],
+	"galleryBanner":{
+		"color": "#1e415e",
+        "theme": "dark"
+	},
 	"contributes": {
 		"menus": {
+			"commandPalette": [
+				{
+					"command": "git-hooks.openHook",
+					"when": "false"
+				},
+				{
+					"command": "git-hooks.runHook",
+					"when": "false"
+				},
+				{
+					"command": "git-hooks.toggleHook",
+					"when": "false"
+				},
+				{
+					"command": "git-hooks.hookDescription",
+					"when": "false"
+				}
+			],
 			"view/title": [
 				{
 					"command": "git-hooks.reloadHooks",
@@ -103,8 +127,8 @@
 			],
 			"scm": [
 				{
-					"id":"git_hooks_scm",
-					"name":"Git Hooks",
+					"id": "git_hooks_scm",
+					"name": "Git Hooks",
 					"when": "workSpaceHasGit && !GitHooks.viewContainerDisplay"
 				}
 			]
@@ -113,40 +137,47 @@
 			{
 				"command": "git-hooks.openHook",
 				"title": "Open Hook",
+				"category": "GitHooks",
 				"icon": "$(edit)"
 			},
 			{
 				"command": "git-hooks.runHook",
 				"title": "Run Hook",
+				"category": "GitHooks",
 				"icon": "$(debug-start)"
 			},
 			{
 				"command": "git-hooks.toggleHook",
 				"title": "Toggle Hook",
+				"category": "GitHooks",
 				"icon": "$(pin)"
 			},
 			{
 				"command": "git-hooks.reloadHooks",
 				"title": "Reload Hooks",
+				"category": "GitHooks",
 				"icon": "$(timeline-refresh)"
 			},
 			{
 				"command": "git-hooks.hookDescription",
-				"title": "Hook Description"
+				"title": "Hook Description",
+				"category": "GitHooks"
+
 			},
 			{
 				"command": "git-hooks.toggleView",
 				"title": "Change Extension View",
-				"icon":"$(source-control)"
+				"category": "GitHooks",
+				"icon": "$(source-control)"
 			}
 		],
-		"configuration":{
-			"type":"object",
+		"configuration": {
+			"type": "object",
 			"title": "GitHook Settings",
 			"properties": {
-				"GitHooks.viewContainerDisplay":{
-					"type":"boolean",
-					"default":true,
+				"GitHooks.viewContainerDisplay": {
+					"type": "boolean",
+					"default": true,
 					"description": "Display GitHook icon in activity bar"
 				}
 			}
