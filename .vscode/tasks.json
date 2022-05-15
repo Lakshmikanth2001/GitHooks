@@ -13,7 +13,6 @@
 			},
 			"group": {
 				"kind": "build",
-				"isDefault": true
 			}
 		},
 		{
@@ -23,6 +22,7 @@
 			"command": "vsce package",
 			"group": {
 				"kind": "build",
+				"isDefault": true
 			},
 		}
 	]
