@@ -38,9 +38,9 @@
 		"git hook",
 		"Git Hooks"
 	],
-	"galleryBanner":{
+	"galleryBanner": {
 		"color": "#1e415e",
-        "theme": "dark"
+		"theme": "dark"
 	},
 	"contributes": {
 		"menus": {
@@ -162,7 +162,6 @@
 				"command": "git-hooks.hookDescription",
 				"title": "Hook Description",
 				"category": "GitHooks"
-
 			},
 			{
 				"command": "git-hooks.toggleView",

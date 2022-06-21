@@ -50,9 +50,9 @@ function lineAnnotation(activeEditor: TextEditor, contentText: string): void {
 	let baseName = fileName.replace(/^.*[\\\/]/, '').replace('.sample', '');
 	let hookDescription = HOOK_MAP.get(baseName);
 
-	const hoverBoxContent = makeHoverMarkdownString(`<h1> ${baseName} Git Hook</h1>
-	<p>Will run using ${activeEditor.document.languageId} shell </p>
-	<h3> ${hookDescription} </h3>`);
+	const hoverBoxContent = makeHoverMarkdownString(`<h1> ${baseName}  </h1>
+	Will run using ${activeEditor.document.languageId}
+	${hookDescription}`);
 
 	const decoratorOption: DecorationOptions[] = [
 		{
@@ -89,7 +89,7 @@ function onLaunguageChange(event: TextDocument) {
 	const { fileName, languageId } = event;
 	window.showInformationMessage(`Hook Launguage is changed to ${languageId}`);
 
-	
+
 	if (window.activeTextEditor) {
 		if(fileName && fileName.indexOf('hooks') !== -1 && fileName.indexOf('.git') !== -1){
 			lineAnnotation(window.activeTextEditor, languageId);

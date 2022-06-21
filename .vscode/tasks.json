@@ -14,16 +14,6 @@
 			"group": {
 				"kind": "build",
 			}
-		},
-		{
-			// make a buid task by executing the shell commands
-			"label": "package extension",
-			"type": "shell",
-			"command": "vsce package",
-			"group": {
-				"kind": "build",
-				"isDefault": true
-			},
 		}
 	]
 }
