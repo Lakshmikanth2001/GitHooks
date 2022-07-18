@@ -18,3 +18,8 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ### [0.0.5] - 2022-05-05
 - Bug fix for runing hook using `terminal.sendText`
+
+### [0.0.6] - 2022-06-23
+- new feature to run `git hook run` command ( new feature in `git` version `2.36.1`)
+- new snippets for detecting `shell` paths for launguages like [`python`, `bash`, `node`, `java`, `cpp`]
+- new snippet for `dateTime` for `TypeScript`

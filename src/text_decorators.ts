@@ -52,7 +52,7 @@ function lineAnnotation(activeEditor: TextEditor, contentText: string): void {
 
 	const hoverBoxContent = makeHoverMarkdownString(`<h1> ${baseName}  </h1>
 	Will run using ${activeEditor.document.languageId}
-	${hookDescription}`);
+	${hookDescription??""}`);
 
 	const decoratorOption: DecorationOptions[] = [
 		{

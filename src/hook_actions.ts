@@ -1,4 +1,5 @@
 import { Hook, GitHooksProvider } from './hooks_data';
+import { shellComand } from './launguages';
 import * as fs from 'fs';
 import * as vscode from 'vscode';
 import * as path from 'path';
@@ -28,15 +29,15 @@ function openHook(hook: Hook) {
 	});
 }
 
-function runHook(hook: Hook) {
+function conventionalHookRun(hook: Hook) {
 	let terminal: vscode.Terminal;
 
 	if (process.platform === 'win32') {
-		terminal = vscode.window.createTerminal('git-hooks', 'C:\\Program Files\\Git\\bin\\bash.exe');
+		terminal = vscode.window.createTerminal('GitHooks', 'C:\\Program Files\\Git\\bin\\bash.exe');
 	} else if (process.platform === 'darwin') {
-		terminal = vscode.window.createTerminal('git-hooks', '/usr/local/bin/bash');
+		terminal = vscode.window.createTerminal('GitHooks', '/usr/local/bin/bash');
 	} else {
-		terminal = vscode.window.createTerminal('git-hooks', '/bin/bash');
+		terminal = vscode.window.createTerminal('GitHooks', '/bin/bash');
 	}
 	vscode.window.showInformationMessage('Running ' + hook.label);
 
@@ -48,12 +49,39 @@ function runHook(hook: Hook) {
 	terminal.sendText(`rm ./.git/hooks/test_${hook.label}`);
 
 	vscode.window.terminals.forEach((terminal) => {
-		if (terminal.name === 'git-hooks') {
+		if (terminal.name === 'GitHooks') {
 			terminal.show();
 		} else {
 			terminal.hide();
 		}
 	});
+}
+
+async function runHook(hook: Hook) {
+	let terminal: vscode.Terminal;
+
+	let gitVersion: string = await shellComand('git --version');
+	const [, , version]: string[] = gitVersion.split(' ');
+
+	const [majorRelease, subRelease, releaseFix]: string[] = version.split('.');
+
+	const validGitVersion: boolean =
+		majorRelease === '2' && (parseInt(subRelease) > 36 || (subRelease === '36' && releaseFix === '1'));
+
+	if (validGitVersion) {
+		// git hook run command exist
+		terminal = vscode.window.createTerminal('GitHooks');
+		terminal.sendText(`git hook run ${hook.label}`);
+		vscode.window.terminals.forEach((terminal) => {
+			if (terminal.name === 'GitHooks') {
+				terminal.show();
+			} else {
+				terminal.hide();
+			}
+		});
+	} else {
+		conventionalHookRun(hook);
+	}
 }
 
 function toggleHook(hook: Hook) {
@@ -89,10 +117,8 @@ function toggleHook(hook: Hook) {
 				// select an editor
 				await vscode.window.showTextDocument(editor.document);
 				await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
-
 			}
 		});
-
 	}
 }
 
@@ -112,7 +138,6 @@ function reloadHooks() {
 	if (workingDir) {
 		vscode.window.registerTreeDataProvider('git_hooks_view', new GitHooksProvider(workingDir.uri.fsPath, false));
 		vscode.window.registerTreeDataProvider('git_hooks_scm', new GitHooksProvider(workingDir.uri.fsPath, true));
-
 	}
 }
 

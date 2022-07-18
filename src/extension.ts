@@ -4,6 +4,9 @@ import * as vscode from 'vscode';
 import { regesterHookTreeDataProvider } from './hooks_data';
 import { annotateFirstLine, clearLineAnnotation, initialAnnotation } from './text_decorators';
 import { openHook, runHook, toggleHook, reloadHooks, hookDescription } from './hook_actions';
+import { shellComand } from './launguages';
+
+const launguages = ["python", "java", "node", "cpp", "bash"];
 
 function setEditorLaunguage(editor: vscode.TextEditor, language: string) {
 	vscode.languages.setTextDocumentLanguage(editor.document, language);
@@ -22,8 +25,58 @@ function toggleView() {
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
 	// Use the console to output diagnostic information (console.log) and errors (console.error)
-	// This line of code will only be executed once when your extension is activated
+	// This line of code will only be executed once when your extension is activate
 	console.log('Congratulations, your extension "git-hooks" is now active!');
+
+
+	const launguages = ["python", "java", "node", "cpp", "bash"];
+
+	let codePathsPromise = Promise.all(launguages.map(launguage => {
+		return shellComand(`which ${launguage}`, {
+			shell:"C:\\Program Files\\Git\\bin\\bash"
+		});
+	}));
+
+
+	const datetimeSnippetProvider = vscode.languages.registerCompletionItemProvider({
+		scheme:'file',
+		language: 'typescript',
+	},{
+		provideCompletionItems(document: vscode.TextDocument, position: vscode.Position) {
+			const completionItem = new vscode.CompletionItem('datetime ⌚', vscode.CompletionItemKind.Text);
+
+			// provide details about the inserted snippet
+			completionItem.insertText = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().split('.')[0];
+			completionItem.detail = "dateTime by GitHook";
+			completionItem.documentation = new vscode.MarkdownString("This is a typescript snippet for getting current date");
+			return [completionItem];
+		}
+	}, 'dateTime');
+
+
+	codePathsPromise.then((codePath) => {
+		codePath.map((codePath, index) => {
+			// insert a user snippet with prefix ${launguage[index]} and body ${codePath}
+
+			//universal for all the files
+			let launguageSnippetProvider = vscode.languages.registerCompletionItemProvider({
+				scheme:'file',
+			}, {
+				provideCompletionItems(document: vscode.TextDocument, position: vscode.Position){
+					const completionItem = new vscode.CompletionItem(`shell-${launguages[index]} 🐚`, vscode.CompletionItemKind.Text);
+
+					// provide details about the inserted snippet
+					completionItem.insertText = codePath;
+					completionItem.detail = `${launguages[index]} shell path`;
+					completionItem.documentation = new vscode.MarkdownString(`This is a Text Snippet for getting system path of ${launguages[index]}`);
+
+					return [completionItem];
+				}
+			}, `shell-${launguages[index]}`);
+			context.subscriptions.push(launguageSnippetProvider);
+		});
+	});
+
 	vscode.window.onDidChangeActiveTextEditor((editor) => {
 		if (editor) {
 			const fileLocation = editor?.document.uri.fsPath;
@@ -67,6 +120,7 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(vscode.commands.registerCommand('git-hooks.reloadHooks', reloadHooks));
 	context.subscriptions.push(vscode.commands.registerCommand('git-hooks.hookDescription', hookDescription));
 	context.subscriptions.push(vscode.commands.registerCommand('git-hooks.toggleView', toggleView));
+	context.subscriptions.push(datetimeSnippetProvider);
 }
 
 // this method is called when your extension is deactivated
