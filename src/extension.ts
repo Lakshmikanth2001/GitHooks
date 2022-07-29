@@ -6,8 +6,6 @@ import { annotateFirstLine, clearLineAnnotation, initialAnnotation } from './tex
 import { openHook, runHook, toggleHook, reloadHooks, hookDescription } from './hook_actions';
 import { shellComand } from './launguages';
 
-const launguages = ["python", "java", "node", "cpp", "bash"];
-
 function setEditorLaunguage(editor: vscode.TextEditor, language: string) {
 	vscode.languages.setTextDocumentLanguage(editor.document, language);
 }
@@ -28,54 +26,86 @@ export function activate(context: vscode.ExtensionContext) {
 	// This line of code will only be executed once when your extension is activate
 	console.log('Congratulations, your extension "git-hooks" is now active!');
 
+	const launguages = ['python', 'java', 'node', 'cpp', 'bash'];
 
-	const launguages = ["python", "java", "node", "cpp", "bash"];
+	let codePathsPromise = Promise.all(
+		launguages.map((launguage) => {
+			if (process.platform === 'win32') {
+				return shellComand(`which ${launguage}`, {
+					shell: 'C:\\Program Files\\Git\\bin\\bash',
+				});
+			} else if (process.platform === 'darwin') {
+				return shellComand(`which ${launguage}`, {
+					shell: '/bin/bash',
+				});
+			} else if (process.platform === 'linux') {
+				return shellComand(`which ${launguage}`, {
+					shell: '/usr/bin/bash',
+				});
+			} else {
+				vscode.window.showErrorMessage('Unknow OS cannot detect bash shell');
+			}
+		}),
+	);
 
-	let codePathsPromise = Promise.all(launguages.map(launguage => {
-		return shellComand(`which ${launguage}`, {
-			shell:"C:\\Program Files\\Git\\bin\\bash"
+	const datetimeSnippetProvider = vscode.languages.registerCompletionItemProvider(
+		{
+			scheme: 'file',
+			language: 'typescript',
+		},
+		{
+			provideCompletionItems(document: vscode.TextDocument, position: vscode.Position) {
+				const completionItem = new vscode.CompletionItem('datetime ⌚', vscode.CompletionItemKind.Text);
+
+				// provide details about the inserted snippet
+				completionItem.insertText = new Date(Date.now() - new Date().getTimezoneOffset() * 60000)
+					.toISOString()
+					.split('.')[0];
+				completionItem.detail = 'dateTime by GitHook';
+				completionItem.documentation = new vscode.MarkdownString(
+					'This is a typescript snippet for getting current date',
+				);
+				return [completionItem];
+			},
+		},
+		'dateTime',
+	);
+
+	codePathsPromise
+		.then((codePath) => {
+			codePath.map((codePath, index) => {
+				// insert a user snippet with prefix ${launguage[index]} and body ${codePath}
+
+				//universal for all the files
+				let launguageSnippetProvider = vscode.languages.registerCompletionItemProvider(
+					{
+						scheme: 'file',
+					},
+					{
+						provideCompletionItems(document: vscode.TextDocument, position: vscode.Position) {
+							const completionItem = new vscode.CompletionItem(
+								`shell-${launguages[index]} 🐚`,
+								vscode.CompletionItemKind.Text,
+							);
+
+							// provide details about the inserted snippet
+							completionItem.insertText = codePath;
+							completionItem.detail = `${launguages[index]} shell path`;
+							completionItem.documentation = new vscode.MarkdownString(
+								`This is a Text Snippet for getting system path of ${launguages[index]}`,
+							);
+
+							return [completionItem];
+						},
+					},
+					`shell-${launguages[index]}`,
+				);
+				context.subscriptions.push(launguageSnippetProvider);
+			});
+		})
+		.catch(() => {
+			console.error('unable to detect bash shell to detect launguage shells');
 		});
-	}));
-
-
-	const datetimeSnippetProvider = vscode.languages.registerCompletionItemProvider({
-		scheme:'file',
-		language: 'typescript',
-	},{
-		provideCompletionItems(document: vscode.TextDocument, position: vscode.Position) {
-			const completionItem = new vscode.CompletionItem('datetime ⌚', vscode.CompletionItemKind.Text);
-
-			// provide details about the inserted snippet
-			completionItem.insertText = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().split('.')[0];
-			completionItem.detail = "dateTime by GitHook";
-			completionItem.documentation = new vscode.MarkdownString("This is a typescript snippet for getting current date");
-			return [completionItem];
-		}
-	}, 'dateTime');
-
-
-	codePathsPromise.then((codePath) => {
-		codePath.map((codePath, index) => {
-			// insert a user snippet with prefix ${launguage[index]} and body ${codePath}
-
-			//universal for all the files
-			let launguageSnippetProvider = vscode.languages.registerCompletionItemProvider({
-				scheme:'file',
-			}, {
-				provideCompletionItems(document: vscode.TextDocument, position: vscode.Position){
-					const completionItem = new vscode.CompletionItem(`shell-${launguages[index]} 🐚`, vscode.CompletionItemKind.Text);
-
-					// provide details about the inserted snippet
-					completionItem.insertText = codePath;
-					completionItem.detail = `${launguages[index]} shell path`;
-					completionItem.documentation = new vscode.MarkdownString(`This is a Text Snippet for getting system path of ${launguages[index]}`);
-
-					return [completionItem];
-				}
-			}, `shell-${launguages[index]}`);
-			context.subscriptions.push(launguageSnippetProvider);
-		});
-	});
 
 	vscode.window.onDidChangeActiveTextEditor((editor) => {
 		if (editor) {

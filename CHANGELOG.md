@@ -23,3 +23,6 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 - new feature to run `git hook run` command ( new feature in `git` version `2.36.1`)
 - new snippets for detecting `shell` paths for launguages like [`python`, `bash`, `node`, `java`, `cpp`]
 - new snippet for `dateTime` for `TypeScript`
+
+### [0.0.7] -- 2022-07-29
+- resolved bash shell detection issue for both `MAC` and `Linux` operating systems
