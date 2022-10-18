@@ -1,0 +1,215 @@
+{
+	"name": "githooks",
+	"displayName": "GitHooks -- Simple VS-Code UI for git hooks",
+	"description": "Integrating Git Hooks to vscode UI; Can View, Edit and Run your local Git Hooks",
+	"version": "0.0.9",
+	"license": "SEE LICENSE IN LICENSE",
+	"publisher": "lakshmikanthayyadevara",
+	"main": "./out/extension.js",
+	"icon": "assets/icon.png",
+	"engines": {
+		"vscode": "^1.72.0"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/Lakshmikanth2001/GitHooks"
+	},
+	"bugs": {
+		"email": "lakshmikanth2001@gmail.com",
+		"url": "https://github.com/Lakshmikanth2001/GitHooks/issues"
+	},
+	"author": {
+		"name": "Lakshmikanth Ayyadevara",
+		"email": "lakshmikanth2001@gmail.com"
+	},
+	"categories": [
+		"Other"
+	],
+	"activationEvents": [
+		"workspaceContains:.git"
+	],
+	"keywords": [
+		"git",
+		"Git",
+		"githooks",
+		"gitHooks",
+		"git_hooks",
+		"git hooks",
+		"git hook",
+		"Git Hooks"
+	],
+	"galleryBanner": {
+		"color": "#1e415e",
+		"theme": "dark"
+	},
+	"contributes": {
+		"menus": {
+			"commandPalette": [
+				{
+					"command": "git-hooks.openHook",
+					"when": "false"
+				},
+				{
+					"command": "git-hooks.runHook",
+					"when": "false"
+				},
+				{
+					"command": "git-hooks.toggleHook",
+					"when": "false"
+				},
+				{
+					"command": "git-hooks.hookDescription",
+					"when": "false"
+				}
+			],
+			"view/title": [
+				{
+					"command": "git-hooks.reloadHooks",
+					"when": "view == git_hooks_view||view == git_hooks_scm",
+					"group": "navigation"
+				},
+				{
+					"command": "git-hooks.toggleView",
+					"when": "view == git_hooks_view||view == git_hooks_scm",
+					"group": "navigation"
+				}
+			],
+			"view/item/context": [
+				{
+					"command": "git-hooks.openHook",
+					"when": "viewItem == 'hook' && view == git_hooks_view||view == git_hooks_scm",
+					"group": "inline"
+				},
+				{
+					"command": "git-hooks.runHook",
+					"when": "viewItem == 'hook' && view == git_hooks_view||view == git_hooks_scm",
+					"group": "inline"
+				},
+				{
+					"command": "git-hooks.toggleHook",
+					"when": "viewItem == 'hook' && view == git_hooks_view||view == git_hooks_scm",
+					"group": "inline"
+				},
+				{
+					"command": "git-hooks.openHook",
+					"when": "viewItem == 'hook' && view == git_hooks_view||view == git_hooks_scm"
+				},
+				{
+					"command": "git-hooks.runHook",
+					"when": "viewItem == 'hook' && view == git_hooks_view||view == git_hooks_scm"
+				},
+				{
+					"command": "git-hooks.toggleHook",
+					"when": "viewItem == 'hook' && view == git_hooks_view||view == git_hooks_scm"
+				},
+				{
+					"command": "git-hooks.hookDescription",
+					"when": "viewItem == 'hook' && view == git_hooks_view||view == git_hooks_scm"
+				}
+			]
+		},
+		"viewsContainers": {
+			"activitybar": [
+				{
+					"id": "git_hooks",
+					"title": "Git Hooks",
+					"icon": "assets/git_hooks_icon.svg"
+				}
+			]
+		},
+		"views": {
+			"git_hooks": [
+				{
+					"id": "git_hooks_view",
+					"name": "Git Hooks",
+					"when": "workSpaceHasGit && GitHooks.viewContainerDisplay"
+				}
+			],
+			"scm": [
+				{
+					"id": "git_hooks_scm",
+					"name": "Git Hooks",
+					"when": "workSpaceHasGit && !GitHooks.viewContainerDisplay"
+				}
+			]
+		},
+		"commands": [
+			{
+				"command": "git-hooks.openHook",
+				"title": "Open Hook",
+				"category": "GitHooks",
+				"icon": "$(edit)"
+			},
+			{
+				"command": "git-hooks.runHook",
+				"title": "Run Hook",
+				"category": "GitHooks",
+				"icon": "$(debug-start)"
+			},
+			{
+				"command": "git-hooks.toggleHook",
+				"title": "Toggle Hook",
+				"category": "GitHooks",
+				"icon": "$(pin)"
+			},
+			{
+				"command": "git-hooks.reloadHooks",
+				"title": "Reload Hooks",
+				"category": "GitHooks",
+				"icon": "$(timeline-refresh)"
+			},
+			{
+				"command": "git-hooks.hookDescription",
+				"title": "Hook Description",
+				"category": "GitHooks"
+			},
+			{
+				"command": "git-hooks.toggleView",
+				"title": "Change Extension View",
+				"category": "GitHooks",
+				"icon": "$(source-control)"
+			}
+		],
+		"configuration": {
+			"type": "object",
+			"title": "GitHook Settings",
+			"properties": {
+				"GitHooks.viewContainerDisplay": {
+					"type": "boolean",
+					"default": true,
+					"description": "Display GitHook icon in activity bar"
+				}
+			}
+		},
+		"snippets": [
+			{
+				"language": "python",
+				"path": "./src/snippets/python.json"
+			}
+		]
+	},
+	"scripts": {
+		"vscode:prepublish": "npm run compile",
+		"compile": "tsc -p ./",
+		"watch": "tsc -watch -p ./",
+		"pretest": "npm run compile && npm run lint",
+		"lint": "eslint src --ext ts",
+		"test": "node ./out/test/runTest.js"
+	},
+	"devDependencies": {
+		"@types/glob": "^7.2.0",
+		"@types/mocha": "^9.0.0",
+		"@types/node": "14.x",
+		"@types/vscode": "^1.72.0",
+		"@typescript-eslint/eslint-plugin": "^5.9.1",
+		"@typescript-eslint/parser": "^5.9.1",
+		"@vscode/test-electron": "^2.0.3",
+		"eslint": "^8.6.0",
+		"glob": "^7.2.0",
+		"mocha": "^9.1.3",
+		"typescript": "^4.5.4"
+	},
+	"dependencies": {
+		"vscode-dts": "^0.3.3"
+	}
+}
