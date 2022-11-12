@@ -33,11 +33,11 @@ function conventionalHookRun(hook: Hook) {
 	let terminal: vscode.Terminal;
 
 	if (process.platform === 'win32') {
-		terminal = vscode.window.createTerminal('GitHooks', 'C:\\Program Files\\Git\\bin\\bash.exe');
+		terminal = vscode.window.createTerminal(hook.label + ' hook', 'C:\\Program Files\\Git\\bin\\bash.exe');
 	} else if (process.platform === 'darwin') {
-		terminal = vscode.window.createTerminal('GitHooks', '/usr/local/bin/bash');
+		terminal = vscode.window.createTerminal(hook.label + ' hook', '/usr/local/bin/bash');
 	} else {
-		terminal = vscode.window.createTerminal('GitHooks', '/bin/bash');
+		terminal = vscode.window.createTerminal(hook.label + ' hook', '/bin/bash');
 	}
 	vscode.window.showInformationMessage('Running ' + hook.label);
 
@@ -49,7 +49,7 @@ function conventionalHookRun(hook: Hook) {
 	terminal.sendText(`rm ./.git/hooks/test_${hook.label}`);
 
 	vscode.window.terminals.forEach((terminal) => {
-		if (terminal.name === 'GitHooks') {
+		if (terminal.name === hook.label + ' hook') {
 			terminal.show();
 		} else {
 			terminal.hide();
@@ -70,10 +70,10 @@ async function runHook(hook: Hook) {
 
 	if (validGitVersion) {
 		// git hook run command exist
-		terminal = vscode.window.createTerminal('GitHooks');
+		terminal = vscode.window.createTerminal(hook.label + ' hook');
 		terminal.sendText(`git hook run ${hook.label}`);
 		vscode.window.terminals.forEach((terminal) => {
-			if (terminal.name === 'GitHooks') {
+			if (terminal.name === hook.label + ' hook') {
 				terminal.show();
 			} else {
 				terminal.hide();
