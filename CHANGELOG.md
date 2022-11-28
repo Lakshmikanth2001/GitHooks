@@ -28,3 +28,6 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ### [0.0.9] -- 2022-10-13
 - Added `ViewBadge` Feature which can be viewed for `code` version > `1.72.0`
+
+### [0.0.10] -- 2022-11-28
+- Include `Webpack` to minify the extension and improving extension load time

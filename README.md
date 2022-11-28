@@ -8,7 +8,6 @@
 * Edit git hook in current workspace
 
 ## Run Git Hooks
-* made a bug fix for running git hooks
 ![](https://githooks.s3.ap-south-1.amazonaws.com/run_hook.png)
 
 ## Various Shell path suggetions
