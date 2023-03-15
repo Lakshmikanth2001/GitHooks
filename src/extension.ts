@@ -3,7 +3,7 @@
 import * as vscode from 'vscode';
 import { regesterHookTreeDataProvider } from './hooks_data';
 import { annotateFirstLine, clearLineAnnotation, initialAnnotation } from './text_decorators';
-import { openHook, runHook, toggleHook, reloadHooks, hookDescription } from './hook_actions';
+import { openHook, runHook, toggleHook, reloadHooks, hookDescription, runCurrentHook } from './hook_actions';
 import { shellComand } from './launguages';
 
 function setEditorLaunguage(editor: vscode.TextEditor, language: string) {
@@ -146,6 +146,7 @@ export function activate(context: vscode.ExtensionContext) {
 	// add githooks to vscode source control view
 	context.subscriptions.push(vscode.commands.registerCommand('git-hooks.runHook', runHook));
 	context.subscriptions.push(vscode.commands.registerCommand('git-hooks.openHook', openHook));
+	context.subscriptions.push(vscode.commands.registerCommand('git-hooks.runCurrentHook', runCurrentHook));
 	context.subscriptions.push(vscode.commands.registerCommand('git-hooks.toggleHook', toggleHook));
 	context.subscriptions.push(vscode.commands.registerCommand('git-hooks.reloadHooks', reloadHooks));
 	context.subscriptions.push(vscode.commands.registerCommand('git-hooks.hookDescription', hookDescription));

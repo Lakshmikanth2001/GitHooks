@@ -3,4 +3,5 @@ dist
 node_modules
 .vscode-test/
 *.vsix
+stats.json
 copy_script.sh

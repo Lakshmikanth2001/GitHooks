@@ -84,6 +84,13 @@ async function runHook(hook: Hook) {
 	}
 }
 
+async function runCurrentHook(){
+	let currentHook = vscode.window.activeTextEditor?.document??null
+	if(currentHook){
+		vscode.window.showInformationMessage("Hook " + currentHook);
+	}
+}
+
 function toggleHook(hook: Hook) {
 	const workingDir = vscode.workspace.workspaceFolders?.[0] ?? '';
 
@@ -143,4 +150,4 @@ function reloadHooks() {
 	}
 }
 
-export { openHook, runHook, toggleHook, reloadHooks, hookDescription };
+export { openHook, runHook, toggleHook, reloadHooks, hookDescription, runCurrentHook };

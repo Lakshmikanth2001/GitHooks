@@ -106,6 +106,13 @@
 					"command": "git-hooks.hookDescription",
 					"when": "viewItem == 'hook' && view == git_hooks_view||view == git_hooks_scm"
 				}
+			],
+			"editor/title": [
+				{
+				  "when": "resourceLangId == perl",
+				  "command": "git-hooks.runCurrentHook",
+				  "group": "navigation"
+				}
 			]
 		},
 		"viewsContainers": {
@@ -139,6 +146,12 @@
 				"title": "Open Hook",
 				"category": "GitHooks",
 				"icon": "$(edit)"
+			},
+			{
+				"command": "git-hooks.runCurrentHook",
+				"title": "Run Current Hook",
+				"category": "GitHooks",
+				"icon": "$(debug-start)"
 			},
 			{
 				"command": "git-hooks.runHook",
@@ -189,6 +202,7 @@
 		]
 	},
 	"scripts": {
+		"analizeBundle": "webpack --profile --json > stats.json",
 		"compile": "tsc -p ./",
 		"watch": "tsc -watch -p ./",
 		"pretest": "npm run compile && npm run lint",
@@ -214,6 +228,7 @@
 		"ts-loader": "^9.4.1",
 		"typescript": "^4.5.4",
 		"webpack": "^5.75.0",
+		"webpack-bundle-analyzer": "^4.7.0",
 		"webpack-cli": "^5.0.0"
 	},
 	"dependencies": {

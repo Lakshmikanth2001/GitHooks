@@ -4,6 +4,7 @@
 
 const path = require('path');
 const webpack = require('webpack');
+const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
 /**@type {import('webpack').Configuration}*/
 const config = {
@@ -41,6 +42,11 @@ const config = {
         ]
       }
     ]
-  }
+  },
+  plugins: [
+    new BundleAnalyzerPlugin({
+      analyzerMode: 'static'
+    })
+  ]
 };
 module.exports = config;
