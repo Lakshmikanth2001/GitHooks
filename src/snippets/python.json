@@ -1,37 +1,4 @@
 {
-    "PyMySQL-DB-Connection-GitHook": {
-        "scope": "python",
-        "prefix": [
-            "pymysql",
-            "PyMySQL"
-        ],
-        "body": [
-            "import pymysql",
-            "class Database:",
-            "",
-            "    database_cred = {",
-            "        \"host\": \"#HOST#\",",
-            "        \"user\": \"#USER#\",",
-            "        \"password\": \"#PASSWORD#\",",
-            "        \"database\": \"#DATABASE#\",",
-            "        \"cursorclass\": pymysql.cursors.DictCursor",
-            "    }",
-            "",
-            "    def __init__(self, database_cred:dict = None):",
-            "        if database_cred:",
-            "            self.conn = pymysql.connect(**database_cred)",
-            "        else:",
-            "            self.conn = pymysql.connect(**self.database_cred)",
-            "",
-            "    def run_qry(self, sql: str):",
-            "        with self.conn.cursor() as cursor:",
-            "            cursor.execute(sql)",
-            "            self.conn.commit()",
-            "            result = cursor.fetchall()",
-            "            return result"
-        ],
-        "description": "PyMySQL database connection"
-    },
     "Python-PreCommit-Hook": {
         "scope": "python",
         "prefix": [

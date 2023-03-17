@@ -109,9 +109,9 @@
 			],
 			"editor/title": [
 				{
-				  "when": "resourceLangId == perl",
-				  "command": "git-hooks.runCurrentHook",
-				  "group": "navigation"
+					"when": "resourcePath =~ /(?=.*\\.git)(?=.*hooks).*/",
+					"command": "git-hooks.runCurrentHook",
+					"group": "navigation"
 				}
 			]
 		},
