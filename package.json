@@ -2,7 +2,7 @@
 	"name": "githooks",
 	"displayName": "GitHooks -- Simple VS-Code UI for git hooks",
 	"description": "Integrating Git Hooks to vscode UI; Can View, Edit and Run your local Git Hooks",
-	"version": "0.0.11",
+	"version": "0.0.12",
 	"license": "SEE LICENSE IN LICENSE",
 	"publisher": "lakshmikanthayyadevara",
 	"main": "./out/extension.js",
@@ -228,7 +228,7 @@
 		"ts-loader": "^9.4.1",
 		"typescript": "^4.5.4",
 		"webpack": "^5.75.0",
-		"webpack-bundle-analyzer": "^4.7.0",
+		"webpack-bundle-analyzer": "^4.8.0",
 		"webpack-cli": "^5.0.0"
 	},
 	"dependencies": {
