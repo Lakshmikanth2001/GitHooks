@@ -85,7 +85,7 @@ async function runHook(hook: Hook) {
 }
 
 async function runCurrentHook(){
-	let currentActiveFile = vscode.window.activeTextEditor?.document??null
+	let currentActiveFile = vscode.window.activeTextEditor?.document??null;
 	let hookStatus = null;
 	if(currentActiveFile){
 		let currentHookFilePath = currentActiveFile.fileName;
@@ -96,7 +96,7 @@ async function runCurrentHook(){
 		} else {
 			hookStatus = 'Active';
 		}
-		let currentHook = new Hook(currentHookFileName, hookStatus, vscode.TreeItemCollapsibleState.None)
+		let currentHook = new Hook(currentHookFileName, hookStatus, vscode.TreeItemCollapsibleState.None);
 		runHook(currentHook);
 	}
 }

@@ -27,6 +27,7 @@ const lineDecorationType = window.createTextEditorDecorationType({
 function makeHoverMarkdownString(markDown: string): MarkdownString {
 	const hoverMessage: MarkdownString = new MarkdownString(markDown);
 	hoverMessage.supportHtml = true;
+	hoverMessage.isTrusted = true;
 
 	return hoverMessage;
 }
@@ -50,9 +51,7 @@ function lineAnnotation(activeEditor: TextEditor, contentText: string): void {
 	let baseName = fileName.replace(/^.*[\\\/]/, '').replace('.sample', '');
 	let hookDescription = HOOK_MAP.get(baseName);
 
-	const hoverBoxContent = makeHoverMarkdownString(`<h1> ${baseName}  </h1>
-	Will run using ${activeEditor.document.languageId}
-	${hookDescription??""}`);
+	const hoverBoxContent = makeHoverMarkdownString(hookDescription + "");
 
 	const decoratorOption: DecorationOptions[] = [
 		{

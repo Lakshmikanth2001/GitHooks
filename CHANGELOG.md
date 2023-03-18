@@ -31,3 +31,9 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ### [0.0.10] -- 2022-11-28
 - Include `Webpack` to minify the extension and improving extension load time
+
+### [0.0.11] -- 2023-03-18
+- Added Run Button to `editor/title` for every hook present under .git directory
+- Removed `PyMySQL` snippent
+- Added shebang snippets
+- Improved `hook_descriptions` on lineAnnotation

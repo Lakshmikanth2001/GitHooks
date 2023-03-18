@@ -10,6 +10,23 @@ function setEditorLaunguage(editor: vscode.TextEditor, language: string) {
 	vscode.languages.setTextDocumentLanguage(editor.document, language);
 }
 
+function createCustomCompletionItem(
+	snippetName: string,
+	completionKind: vscode.CompletionItemKind,
+	insertText: string | undefined,
+	detail: string,
+	documentation: vscode.MarkdownString,
+) {
+	const customCompletionItem = new vscode.CompletionItem(snippetName, completionKind);
+
+	// provide details about the inserted snippet
+	customCompletionItem.insertText = insertText;
+	customCompletionItem.detail = detail;
+	customCompletionItem.documentation = documentation;
+
+	return customCompletionItem;
+}
+
 function toggleView() {
 	// moving the extension from activity bar to Source Control view or vice versa
 	const viewContainerDisplay = vscode.workspace.getConfiguration('GitHooks')?.['viewContainerDisplay'];
@@ -83,22 +100,31 @@ export function activate(context: vscode.ExtensionContext) {
 					},
 					{
 						provideCompletionItems(document: vscode.TextDocument, position: vscode.Position) {
-							const completionItem = new vscode.CompletionItem(
+
+							const shellCompletionItem = createCustomCompletionItem(
 								`shell-${launguages[index]} 🐚`,
 								vscode.CompletionItemKind.Text,
+								codePath,
+								`${launguages[index]} shell path`,
+								new vscode.MarkdownString(
+									`This is a Text Snippet for getting system path of ${launguages[index]}`,
+								)
 							);
 
-							// provide details about the inserted snippet
-							completionItem.insertText = codePath;
-							completionItem.detail = `${launguages[index]} shell path`;
-							completionItem.documentation = new vscode.MarkdownString(
-								`This is a Text Snippet for getting system path of ${launguages[index]}`,
+							const shebangCompletionItem = createCustomCompletionItem(
+								`shebang-${launguages[index]}`,
+								vscode.CompletionItemKind.Constant,
+								'#!' + codePath,
+								`${launguages[index]} shebang text`,
+								new vscode.MarkdownString(
+									`This is a Text Snippet for getting shebang text of ${launguages[index]}
+									which can be instered at the first line`,
+								)
 							);
-
-							return [completionItem];
+							return [shellCompletionItem, shebangCompletionItem];
 						},
 					},
-					`shell-${launguages[index]}`,
+					`shell`, `shebang`,
 				);
 				context.subscriptions.push(launguageSnippetProvider);
 			});
