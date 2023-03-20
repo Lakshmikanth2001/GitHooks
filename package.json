@@ -109,7 +109,7 @@
 			],
 			"editor/title": [
 				{
-					"when": "resourcePath =~ /(?=.*\\.git)(?=.*hooks).*/",
+					"when": "resourcePath =~ /(\/\.git\/hooks\/)/",
 					"command": "git-hooks.runCurrentHook",
 					"group": "navigation"
 				}
