@@ -42,3 +42,6 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 - `Promise.all` to `Promise.allSelected` for detecting launguage shell
 - Regex improvement to detect `.git/hook` folder
 - change `python.json` snippet scope to `bash` and `shellscript`
+
+### [0.0.13] -- 2023-03-22
+- regex correction for including `.git/hooks` path in windows OS
