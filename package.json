@@ -2,7 +2,7 @@
 	"name": "githooks",
 	"displayName": "GitHooks -- Simple VS-Code UI for git hooks",
 	"description": "Integrating Git Hooks to vscode UI; Can View, Edit and Run your local Git Hooks",
-	"version": "0.0.12",
+	"version": "0.0.13",
 	"license": "SEE LICENSE IN LICENSE",
 	"publisher": "lakshmikanthayyadevara",
 	"main": "./out/extension.js",

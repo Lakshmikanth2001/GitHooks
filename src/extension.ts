@@ -43,9 +43,9 @@ export function activate(context: vscode.ExtensionContext) {
 	// This line of code will only be executed once when your extension is activate
 	console.log('Congratulations, your extension "git-hooks" is now active!');
 
-	const launguages = ['python', 'java', 'node', 'cpp', 'bash'];
+	const launguages = ['python', 'python3', 'java', 'node', 'cpp', 'bash'];
 
-	let codePathsPromise = Promise.all(
+	let codePathsPromise = Promise.allSettled(
 		launguages.map((launguage) => {
 			if (process.platform === 'win32') {
 				return shellComand(`which ${launguage}`, {
@@ -88,27 +88,22 @@ export function activate(context: vscode.ExtensionContext) {
 		'dateTime',
 	);
 
-	codePathsPromise
-		.then((codePath) => {
-			codePath.map((codePath, index) => {
-				// insert a user snippet with prefix ${launguage[index]} and body ${codePath}
-
-				//universal for all the files
+	codePathsPromise.then((codePromiseResults) => {
+		codePromiseResults.forEach((promiseResult, index) => {
+			if (promiseResult.status === 'fulfilled') {
+				let codePath = promiseResult.value;
 				let launguageSnippetProvider = vscode.languages.registerCompletionItemProvider(
 					{
 						scheme: 'file',
 					},
 					{
 						provideCompletionItems(document: vscode.TextDocument, position: vscode.Position) {
-
 							const shellCompletionItem = createCustomCompletionItem(
 								`shell-${launguages[index]} 🐚`,
 								vscode.CompletionItemKind.Text,
 								codePath,
 								`${launguages[index]} shell path`,
-								new vscode.MarkdownString(
-									`This is a Text Snippet for getting system path of ${launguages[index]}`,
-								)
+								new vscode.MarkdownString(`This is a Text Snippet for getting system path of ${launguages[index]}`),
 							);
 
 							const shebangCompletionItem = createCustomCompletionItem(
@@ -119,19 +114,21 @@ export function activate(context: vscode.ExtensionContext) {
 								new vscode.MarkdownString(
 									`This is a Text Snippet for getting shebang text of ${launguages[index]}
 									which can be instered at the first line`,
-								)
+								),
 							);
 							return [shellCompletionItem, shebangCompletionItem];
 						},
 					},
-					`shell`, `shebang`,
+					`shell`,
+					`shebang`,
 				);
 				context.subscriptions.push(launguageSnippetProvider);
-			});
-		})
-		.catch(() => {
-			console.error('unable to detect bash shell to detect launguage shells');
+			}
+			else{
+				console.error(`unable to detect ${launguages[index]} launguage path`);
+			}
 		});
+	});
 
 	vscode.window.onDidChangeActiveTextEditor((editor) => {
 		if (editor) {

@@ -37,3 +37,8 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 - Removed `PyMySQL` snippent
 - Added shebang snippets
 - Improved `hook_descriptions` on lineAnnotation
+
+### [0.0.12] -- 2023-03-22
+- `Promise.all` to `Promise.allSelected` for detecting launguage shell
+- Regex improvement to detect `.git/hook` folder
+- change `python.json` snippet scope to `bash` and `shellscript`

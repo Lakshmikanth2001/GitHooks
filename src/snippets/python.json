@@ -1,6 +1,6 @@
 {
     "Python-PreCommit-Hook": {
-        "scope": "python",
+        "scope": "bash,shellscript",
         "prefix": [
             "preCommitHook"
         ],
