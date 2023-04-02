@@ -45,3 +45,6 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ### [0.0.13] -- 2023-03-22
 - regex correction for including `.git/hooks` path in windows OS
+
+### [0.0.14] -- 2023-04-02
+- regex correction for including `.git/hooks` for all Operating Systems
