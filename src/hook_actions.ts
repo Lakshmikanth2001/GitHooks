@@ -6,17 +6,21 @@ import * as path from 'path';
 
 const POST_HOOKS = ['pre-receive', 'update', 'proc-receive', 'post-receive', 'post-update'];
 
-function getHooksDir(): string {
-	// get all files in current workspace
-	const workspaceFolders = vscode.workspace.workspaceFolders;
-	const workspaceFolder = workspaceFolders?.[0];
+let isGitHooksRunCompatabile: boolean | null = null;
 
-	// get all files in .git folder
-	return path.join(workspaceFolder?.uri.fsPath ?? '', '.git', 'hooks');
+async function checkGitVersion(): Promise<boolean> {
+	let gitVersion: string = await shellComand('git --version');
+	const [, , version]: string[] = gitVersion.split(' ');
+
+	const [majorRelease, subRelease, releaseFix]: string[] = version.split('.');
+
+	isGitHooksRunCompatabile = parseInt(majorRelease) >= 2 && (parseInt(subRelease) > 36 || (subRelease === '36' && releaseFix === '1'));
+
+	return isGitHooksRunCompatabile;
 }
 
-function openHook(hook: Hook) {
-	const gitHookDir = getHooksDir();
+async function openHook(hook: Hook) {
+	const gitHookDir = vscode.workspace.getConfiguration('GitHooks')?.['hooksDirectory'];
 	vscode.workspace.openTextDocument(path.join(gitHookDir, hook.label)).then((doc) => {
 		vscode.window.showTextDocument(doc).then((editor) => {
 			// create a vscode snippet
@@ -32,8 +36,18 @@ function openHook(hook: Hook) {
 function conventionalHookRun(hook: Hook) {
 	let terminal: vscode.Terminal;
 
+	// get vscode context
+	let hooksPath = vscode.workspace.getConfiguration('GitHooks')?.['hooksDirectory'] ?? "";
+	let workspaceFolder = vscode.workspace.workspaceFolders?.[0].uri.fsPath;
+	let currentTestHookPath = path.join(hooksPath, `test_${hook.label}`);
+
 	if (process.platform === 'win32') {
 		terminal = vscode.window.createTerminal(hook.label + ' hook', 'C:\\Program Files\\Git\\bin\\bash.exe');
+
+		// convert windows path to posix path
+		hooksPath = hooksPath.split(path.sep).join(path.posix.sep);
+		workspaceFolder = workspaceFolder?.split(path.sep).join(path.posix.sep);
+		currentTestHookPath = currentTestHookPath.split(path.sep).join(path.posix.sep);
 	} else if (process.platform === 'darwin') {
 		terminal = vscode.window.createTerminal(hook.label + ' hook', '/usr/local/bin/bash');
 	} else {
@@ -41,12 +55,13 @@ function conventionalHookRun(hook: Hook) {
 	}
 	vscode.window.showInformationMessage('Running ' + hook.label);
 
-	terminal.sendText(`cd .git && cd hooks`);
+	//access workspace root directory
+	terminal.sendText(`cd ${hooksPath}`); // cd to hooks dir
 	terminal.sendText(`cat ${hook.label} > test_${hook.label}`);
 	terminal.sendText(`chmod +x test_${hook.label}`);
-	terminal.sendText(`cd .. && cd ..`);
-	terminal.sendText(`./.git/hooks/test_${hook.label}`);
-	terminal.sendText(`rm ./.git/hooks/test_${hook.label}`);
+	terminal.sendText(`cd ${workspaceFolder}`);
+	terminal.sendText(`sh ${currentTestHookPath}`);
+	terminal.sendText(`rm ${currentTestHookPath}`);
 
 	vscode.window.terminals.forEach((terminal) => {
 		if (terminal.name === hook.label + ' hook') {
@@ -60,15 +75,11 @@ function conventionalHookRun(hook: Hook) {
 async function runHook(hook: Hook) {
 	let terminal: vscode.Terminal;
 
-	let gitVersion: string = await shellComand('git --version');
-	const [, , version]: string[] = gitVersion.split(' ');
+	if(isGitHooksRunCompatabile === null){
+		isGitHooksRunCompatabile = await checkGitVersion();
+	}
 
-	const [majorRelease, subRelease, releaseFix]: string[] = version.split('.');
-
-	const validGitVersion: boolean =
-		majorRelease === '2' && (parseInt(subRelease) > 36 || (subRelease === '36' && releaseFix === '1'));
-
-	if (validGitVersion) {
+	if (isGitHooksRunCompatabile) {
 		// git hook run command exist
 		terminal = vscode.window.createTerminal(hook.label + ' hook');
 		terminal.sendText(`git hook run ${hook.label}`);
@@ -102,43 +113,42 @@ async function runCurrentHook(){
 }
 
 function toggleHook(hook: Hook) {
-	const workingDir = vscode.workspace.workspaceFolders?.[0] ?? '';
+	// get hooksDir from vscode context
+	const hooksDir = vscode.workspace.getConfiguration('GitHooks')?.['hooksDirectory'] ?? "";
 
-	if (workingDir) {
-		const rootDir = workingDir.uri.fsPath;
-		const hooksDir = rootDir + '/.git/hooks';
+	let oldPath = '';
+	let newPath = '';
 
-		let oldPath = '';
-		let newPath = '';
-
-		if (hook.label.indexOf('.sample') !== -1) {
-			oldPath = path.join(hooksDir, hook.label);
-			newPath = path.join(hooksDir, hook.label.replace('.sample', ''));
-		} else {
-			oldPath = path.join(hooksDir, hook.label);
-			newPath = path.join(hooksDir, hook.label + '.sample');
-		}
-
-		fs.rename(oldPath, newPath, (err) => {
-			if (err) {
-				throw err;
-			}
-			// rebuild the TreeDataProvider
-			regesterHookTreeDataProvider();
-			// vscode.window.registerTreeDataProvider('git_hooks_view', new GitHooksProvider(workingDir.uri.fsPath, false));
-			// vscode.window.registerTreeDataProvider('git_hooks_scm', new GitHooksProvider(workingDir.uri.fsPath, true));
-		});
-
-		// close a particular file from window
-		vscode.window.visibleTextEditors.forEach(async (editor) => {
-			if (editor.document.uri.fsPath === oldPath) {
-				// close the current
-				// select an editor
-				await vscode.window.showTextDocument(editor.document);
-				await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
-			}
-		});
+	if (hook.label.indexOf('.sample') !== -1) {
+		oldPath = path.join(hooksDir, hook.label);
+		newPath = path.join(hooksDir, hook.label.replace('.sample', ''));
+	} else {
+		oldPath = path.join(hooksDir, hook.label);
+		newPath = path.join(hooksDir, hook.label + '.sample');
 	}
+
+	fs.rename(oldPath, newPath, (err) => {
+		if (err) {
+			throw err;
+		}
+		// rebuild the TreeDataProvider
+
+		vscode.workspace.getConfiguration('GitHooks')?.update('GitHooks.hooksDirectory', hooksDir, vscode.ConfigurationTarget.Workspace);
+
+		regesterHookTreeDataProvider();
+		// vscode.window.registerTreeDataProvider('git_hooks_view', new GitHooksProvider(workingDir.uri.fsPath, false));
+		// vscode.window.registerTreeDataProvider('git_hooks_scm', new GitHooksProvider(workingDir.uri.fsPath, true));
+	});
+
+	// close a particular file from window
+	vscode.window.visibleTextEditors.forEach(async (editor) => {
+		if (editor.document.uri.fsPath === oldPath) {
+			// close the current
+			// select an editor
+			await vscode.window.showTextDocument(editor.document);
+			await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
+		}
+	});
 }
 
 function hookDescription(hook: Hook) {

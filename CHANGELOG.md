@@ -48,3 +48,11 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ### [0.0.14] -- 2023-04-02
 - regex correction for including `.git/hooks` for all Operating Systems
+
+### [1.0.0] -- 2023-07-16
+- Added configuration to give hook path (just to run and toggle the hooks)
+- Improved `runHook` performace by caching git results
+- Bug fix for conventional hook run
+- Added and option for predefinedHooks(all default hooks supplied by git)
+- editor/title regex correction
+- galleryBanner color change

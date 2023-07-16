@@ -1,5 +1,6 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
+import * as path from 'path';
 import * as vscode from 'vscode';
 import { regesterHookTreeDataProvider } from './hooks_data';
 import { annotateFirstLine, clearLineAnnotation, initialAnnotation } from './text_decorators';
@@ -8,6 +9,43 @@ import { shellComand } from './launguages';
 
 function setEditorLaunguage(editor: vscode.TextEditor, language: string) {
 	vscode.languages.setTextDocumentLanguage(editor.document, language);
+}
+
+async function executeShellCommandSync(command: string) {
+	if (process.platform === 'win32') {
+		return await shellComand(command, {
+			shell: 'C:\\Program Files\\Git\\bin\\bash',
+		});
+	} else if (process.platform === 'darwin') {
+		return await shellComand(command, {
+			shell: '/bin/bash',
+		});
+	} else if (process.platform === 'linux') {
+		return await shellComand(command, {
+			shell: '/usr/bin/bash',
+		});
+	} else {
+		vscode.window.showErrorMessage('Unknow OS cannot detect bash shell');
+	}
+}
+
+async function getHooksDir(): Promise<string> {
+	// get all files in current workspace
+	// get coreHooksPath by executing this command git config --get core.hooksPath
+
+	// pipe error to null
+	let hooksPath = await executeShellCommandSync('git config --get core.hooksPath  &2>/dev/null');
+
+	if (hooksPath && hooksPath !== '') {
+		// store this in vscode setContext
+		return hooksPath;
+	}
+
+	const workspaceFolders = vscode.workspace.workspaceFolders;
+	const workspaceFolder = workspaceFolders?.[0];
+
+	hooksPath = path.join(workspaceFolder?.uri.fsPath ?? '', '.git', 'hooks');
+	return hooksPath;
 }
 
 function createCustomCompletionItem(
@@ -38,7 +76,7 @@ function toggleView() {
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
-export function activate(context: vscode.ExtensionContext) {
+export async function activate(context: vscode.ExtensionContext) {
 	// Use the console to output diagnostic information (console.log) and errors (console.error)
 	// This line of code will only be executed once when your extension is activate
 	console.log('Congratulations, your extension "git-hooks" is now active!');
@@ -123,8 +161,7 @@ export function activate(context: vscode.ExtensionContext) {
 					`shebang`,
 				);
 				context.subscriptions.push(launguageSnippetProvider);
-			}
-			else{
+			} else {
 				console.error(`unable to detect ${launguages[index]} launguage path`);
 			}
 		});
@@ -147,7 +184,7 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 	});
 	vscode.workspace.onDidChangeConfiguration((configChange) => {
-		// get viewContainerDisplay fro configChange
+		// get viewContainerDisplay for configChange
 		if (configChange.affectsConfiguration('GitHooks.viewContainerDisplay')) {
 			const viewContainerDisplay = vscode.workspace.getConfiguration('GitHooks')?.['viewContainerDisplay'] ?? true;
 			if (viewContainerDisplay) {
@@ -157,7 +194,20 @@ export function activate(context: vscode.ExtensionContext) {
 			}
 			vscode.commands.executeCommand('setContext', 'GitHooks.viewContainerDisplay', viewContainerDisplay);
 		}
+		if (configChange.affectsConfiguration('GitHooks.hooksDirectory')) {
+			const hooksDir = vscode.workspace.getConfiguration('GitHooks')?.['hooksDirectory'] ?? '';
+
+			vscode.commands.executeCommand('setContext', 'GitHooks.hooksDirectory', hooksDir);
+			vscode.commands.executeCommand('setContext', 'GitHooks.hooksDirectoryList', [hooksDir]);
+
+			// update hooks directory
+			regesterHookTreeDataProvider();
+		}
 	});
+
+	// get hooks path
+	const hooksDir = await getHooksDir();
+	vscode.workspace.getConfiguration('GitHooks')?.update('hooksDirectory', hooksDir, vscode.ConfigurationTarget.Global);
 	regesterHookTreeDataProvider();
 
 	vscode.workspace.onDidOpenTextDocument((e) => {

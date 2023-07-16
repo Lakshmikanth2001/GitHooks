@@ -19,6 +19,8 @@
     "ignorePatterns": [
         "out",
         "dist",
+        "node_modules/",
+        "hook_description.ts",
         "**/*.d.ts"
     ]
 }

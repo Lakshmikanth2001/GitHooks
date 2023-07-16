@@ -18,10 +18,6 @@ export class Hook extends vscode.TreeItem {
 	contextValue?: string | undefined = 'hook';
 }
 
-export function getHooksDir(workingDir: string): string {
-	return path.join(workingDir, '.git', 'hooks');
-}
-
 export function validViewBadgeVersion() {
 	const initialValidVersion = '1.72.0'; // version where `viewBadge` feature was introduced
 	const baseRelease = initialValidVersion.split('.').map((e) => parseInt(e));
@@ -63,14 +59,16 @@ export function regesterHookTreeDataProvider() {
 }
 export class GitHooksProvider implements vscode.TreeDataProvider<Hook> {
 	public activeHookCount: number = 0;
+	public gitHooksDir: string;
+	// get extension context
 	constructor(private workspaceRoot: string, private isFromScm: boolean) {
 		vscode.workspace.onDidChangeWorkspaceFolders((e) => this.onActivateWorkspaceChanged(e));
 		this.onActivateWorkspaceChanged(undefined);
+		this.gitHooksDir = vscode.workspace.getConfiguration('GitHooks')?.get('hooksDirectory') ?? '';
 	}
 
 	private onActivateWorkspaceChanged(e: vscode.WorkspaceFoldersChangeEvent | undefined): void {
 		if (e) {
-			console.log('onActivateWorkspaceChanged');
 			vscode.commands.executeCommand('setContext', 'workSpaceHasGit', this.workSpaceHasGit(e.added[0].uri.fsPath));
 		} else {
 			const workingDir = vscode.workspace.workspaceFolders?.[0] ?? '';
@@ -84,7 +82,7 @@ export class GitHooksProvider implements vscode.TreeDataProvider<Hook> {
 
 	getActiveHooks() {
 		let activeHooks = 0;
-		let hooksPath = getHooksDir(this.workspaceRoot);
+		let hooksPath = this.gitHooksDir;
 		if (this.pathExists(hooksPath)) {
 			// read hooks path dir
 			const hooks = fs.readdirSync(hooksPath);
@@ -115,7 +113,7 @@ export class GitHooksProvider implements vscode.TreeDataProvider<Hook> {
 			return Promise.resolve([]);
 		}
 
-		const hooksPath = getHooksDir(this.workspaceRoot);
+		const hooksPath = this.gitHooksDir;
 
 		if (this.isFromScm) {
 			// no need of root node in scm view
@@ -138,19 +136,20 @@ export class GitHooksProvider implements vscode.TreeDataProvider<Hook> {
 		}
 	}
 
-	private getSupportedLaunguages(): void {
-		// type of list of strings
-		const supportedLanguages: string[] = vscode.workspace.getConfiguration('GitHooks')?.['supportedLanguages'] ?? [];
-	}
-
 	private getHooks(hooksPath: string): Hook[] {
+		const predefinedHooks: string[] = vscode.workspace.getConfiguration('GitHooks')?.['predefinedHooks'] ?? [];
+
 		if (this.pathExists(hooksPath)) {
 			// read hooks path dir
 			const hooks = fs.readdirSync(hooksPath);
 			const hooksList: Hook[] = hooks.map((hook) => {
 				let hookStatus: string;
+				const hookLabel = hook.replace('.sample', '');
 
-				if (hook.indexOf('.sample') !== -1) {
+				if(!predefinedHooks.includes(hookLabel)) {
+					hookStatus = 'Not a predefined hook';
+				}
+				else if (hook.indexOf('.sample') !== -1) {
 					hookStatus = 'Inactive';
 				} else {
 					this.activeHookCount++;
@@ -158,10 +157,15 @@ export class GitHooksProvider implements vscode.TreeDataProvider<Hook> {
 				}
 				let hookData = new Hook(hook, hookStatus, vscode.TreeItemCollapsibleState.None);
 
-				if (hook.indexOf('.sample') === -1) {
+				if(!predefinedHooks.includes(hookLabel)) {
+					hookData.iconPath = new vscode.ThemeIcon('testing-error-icon');
+					hookData.contextValue = 'notPredefined';
+				}
+				else if (hook.indexOf('.sample') === -1) {
 					// no .sample is found
 					hookData.iconPath = new vscode.ThemeIcon('testing-passed-icon', new vscode.ThemeColor('#RRGGBBAA'));
-				} else {
+				}
+				else {
 					hookData.iconPath = new vscode.ThemeIcon('circle-large-outline');
 				}
 				return hookData;
