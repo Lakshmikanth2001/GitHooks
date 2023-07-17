@@ -12,9 +12,15 @@
 ![](https://githooks.s3.ap-south-1.amazonaws.com/run_hook.png)
 
 ## Git Hooks Configuration
-In setting configure GitHooks.hooksDirectory to view hooks in your workspace(
-    please make sure to set `git config core.hooksPath $HOOKS_PATH` to the same path as configured in the extension
-)
+- GitHooks.hooksDirectory
+    - change GitHooks.hooksDirectory to confgiure you local git hooks to the required path
+- GitHooks.viewContainerDisplay
+    - to toggle between `SCM` and `Activity Bar` view
+- GitHooks.predefinedHooks
+    - list of hooks which are defined by git. If a file not in this list is present in `hooksDirecotry` a vscode 'testing-error-icon' will be displayed beside it
+- GitHooks.languageBinaries
+    - this configuration is used to suggest various shell path and shebang text input various launguage binary like (python, python3, node ) etc
+    their path is computed via a bash command `which python`
 
 ## Various Shell path suggetions
 ![](https://githooks.s3.ap-south-1.amazonaws.com/shell-suggetion.png)

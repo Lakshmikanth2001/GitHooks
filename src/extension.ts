@@ -26,6 +26,7 @@ async function executeShellCommandSync(command: string) {
 		});
 	} else {
 		vscode.window.showErrorMessage('Unknow OS cannot detect bash shell');
+		return Promise.reject('Unknow OS cannot detect bash shell')
 	}
 }
 
@@ -46,6 +47,16 @@ async function getHooksDir(): Promise<string> {
 
 	hooksPath = path.join(workspaceFolder?.uri.fsPath ?? '', '.git', 'hooks');
 	return hooksPath;
+}
+
+async function setHooksDir(hooksDirectory : string): Promise<String>{
+	// set git config core.hooksPath
+	const workingDir = vscode.workspace.workspaceFolders?.[0] ?? '';
+	if(!workingDir){
+		return Promise.reject("unable to get current user workspace");
+	}
+
+	return await executeShellCommandSync(`cd ${workingDir.uri.fsPath} && git config core.hooksPath ${hooksDirectory} &2>/dev/null`)
 }
 
 function createCustomCompletionItem(
@@ -81,7 +92,9 @@ export async function activate(context: vscode.ExtensionContext) {
 	// This line of code will only be executed once when your extension is activate
 	console.log('Congratulations, your extension "git-hooks" is now active!');
 
-	const launguages = ['python', 'python3', 'java', 'node', 'cpp', 'bash'];
+	const launguages: Array<String> = vscode.workspace.getConfiguration('GitHooks')?.['languageBinaries']??[];
+
+	let intialHooksDirectorySet = true;
 
 	let codePathsPromise = Promise.allSettled(
 		launguages.map((launguage) => {
@@ -201,7 +214,14 @@ export async function activate(context: vscode.ExtensionContext) {
 			vscode.commands.executeCommand('setContext', 'GitHooks.hooksDirectoryList', [hooksDir]);
 
 			// update hooks directory
-			regesterHookTreeDataProvider();
+			if(!intialHooksDirectorySet){
+				// refresh the Hooks Tree provider after setting the hooks directory
+
+				setHooksDir(hooksDir).then(() => {
+					regesterHookTreeDataProvider();
+					vscode.window.showInformationMessage(`GitHooks directory(git config core.hooksPath) is now set to ${hooksDir}`);
+				});
+			}
 		}
 	});
 
@@ -209,6 +229,7 @@ export async function activate(context: vscode.ExtensionContext) {
 	const hooksDir = await getHooksDir();
 	vscode.workspace.getConfiguration('GitHooks')?.update('hooksDirectory', hooksDir, vscode.ConfigurationTarget.Global);
 	regesterHookTreeDataProvider();
+	intialHooksDirectorySet = false
 
 	vscode.workspace.onDidOpenTextDocument((e) => {
 		initialAnnotation();

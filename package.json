@@ -216,6 +216,18 @@
 						"update"
 					],
 					"description": "Predefined hooks to display"
+				},
+				"GitHooks.languageBinaries": {
+					"type": "array",
+					"default": [
+						"python",
+						"python3",
+						"java",
+						"node",
+						"cpp",
+						"bash"
+					],
+					"description": "Installed language binaries to view shell path and shebang suggetions"
 				}
 			}
 		},
