@@ -6,7 +6,7 @@
 * View Git Hooks in current workspace
 * Activate git hooks in current workspace
 * Edit git hook in current workspace
-* Configure git hooks path in current workspace (Doesn't set the git config core.hooksPath)
+* Configures git hooks path (i.e `git config core.hooksPath`) in current workspace
 
 ## Run Git Hooks
 ![](https://githooks.s3.ap-south-1.amazonaws.com/run_hook.png)

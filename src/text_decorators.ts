@@ -34,16 +34,16 @@ function makeHoverMarkdownString(markDown: string): MarkdownString {
 
 function annotateFirstLine(event: TextEditorSelectionChangeEvent) {
 	const editor = window.activeTextEditor;
-	// get file name
-	if (editor) {
-		if (event.selections[0].isSingleLine) {
-			if (event.selections[0].start.line === 0) {
-				lineAnnotation(editor, editor.document.languageId);
-			} else {
-				clearLineAnnotation(editor);
-			}
-		}
+	if (!editor) {
+		return;
 	}
+
+	if (!event.selections[0].isSingleLine || event.selections[0].start.line !== 0) {
+		clearLineAnnotation(editor);
+		return;
+	}
+
+	lineAnnotation(editor, editor.document.languageId);
 }
 
 function lineAnnotation(activeEditor: TextEditor, contentText: string): void {
@@ -70,14 +70,13 @@ function lineAnnotation(activeEditor: TextEditor, contentText: string): void {
 }
 
 function initialAnnotation() {
-	if (window.activeTextEditor) {
-		const editor = window.activeTextEditor;
-		const fileLocation = editor?.document.uri.fsPath;
+	const editor = window.activeTextEditor;
+	if (!editor) return;
 
-		if (fileLocation && fileLocation.indexOf('hooks') !== -1 && fileLocation.indexOf('.git') !== -1) {
-			lineAnnotation(editor, editor.document.languageId);
-		}
-	}
+	const fileLocation = editor.document.uri.fsPath;
+	if (!fileLocation || fileLocation.indexOf('hooks') === -1 || fileLocation.indexOf('.git') === -1) return;
+
+	lineAnnotation(editor, editor.document.languageId);
 }
 
 function clearLineAnnotation(activeEditor: TextEditor): void {
@@ -85,14 +84,24 @@ function clearLineAnnotation(activeEditor: TextEditor): void {
 }
 
 function onLaunguageChange(event: TextDocument) {
-	const { fileName, languageId } = event;
-	window.showInformationMessage(`Hook Launguage is changed to ${languageId}`);
+	if (!event) {
+		return;
+	}
 
+	const { fileName, languageId } = event;
+
+	if (!fileName || !languageId) {
+		return;
+	}
+
+	if (fileName.indexOf('hooks') === -1 || fileName.indexOf('.git') === -1) {
+		return;
+	}
+
+	window.showInformationMessage(`Hook Language is changed to ${languageId}`);
 
 	if (window.activeTextEditor) {
-		if(fileName && fileName.indexOf('hooks') !== -1 && fileName.indexOf('.git') !== -1){
-			lineAnnotation(window.activeTextEditor, languageId);
-		}
+		lineAnnotation(window.activeTextEditor, languageId);
 	}
 }
 

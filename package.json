@@ -2,7 +2,7 @@
 	"name": "githooks",
 	"displayName": "GitHooks -- Simple VS-Code UI for git hooks",
 	"description": "Integrating Git Hooks to vscode UI; Can View, Edit and Run your local Git Hooks",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"license": "SEE LICENSE IN LICENSE",
 	"publisher": "lakshmikanthayyadevara",
 	"main": "./out/extension.js",
@@ -195,8 +195,9 @@
 				},
 				"GitHooks.hooksDirectory": {
 					"type": "string",
-					"default": ".git/hooks",
-					"description": "Directories to search for git hooks (Doesn't set the git config core.hooksPath)"
+					"scope": "resource",
+					"default": "",
+					"description": "Directories to search for git hooks (git config core.hooksPath)"
 				},
 				"GitHooks.predefinedHooks": {
 					"type": "array",
