@@ -9,6 +9,8 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 - CHANGELOG.md format correction
 - Supporting various launguge binaries for shell and shebang suggetions
 - Making `core.hooksPath` update to workspace scope
+- hookDirectory path correction in windows operating system
+- first step for including test cases
 
 ### [1.0.0] -- 2023-07-16
 - Added configuration to give hook path (just to run and toggle the hooks)

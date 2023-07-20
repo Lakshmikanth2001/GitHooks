@@ -46,6 +46,12 @@ async function getHooksDir(globalFlag?: boolean): Promise<string> {
 	const workspaceFolder = workspaceFolders?.[0];
 
 	hooksPath = path.join(workspaceFolder?.uri.fsPath ?? '', '.git', 'hooks');
+
+	// in windows is path contains C:\ then replace it with c:\
+	if (process.platform === 'win32') {
+		hooksPath = hooksPath.replace(/^([A-Z]):\\/, (_, drive: string) => `${drive.toLowerCase()}:\\`);
+	}
+
 	return hooksPath;
 }
 
@@ -57,10 +63,10 @@ async function setHooksDir(hooksDirectory : string): Promise<String>{
 	}
 
 	if(process.platform === 'win32'){
-		hooksDirectory = hooksDirectory?.split(path.sep).join(path.posix.sep)
+		hooksDirectory = hooksDirectory?.split(path.sep).join(path.posix.sep);
 	}
 
-	return await executeShellCommandSync(`cd ${workingDir.uri.fsPath} && git config core.hooksPath ${hooksDirectory} &2>/dev/null`)
+	return await executeShellCommandSync(`cd ${workingDir.uri.fsPath} && git config core.hooksPath ${hooksDirectory} &2>/dev/null`);
 }
 
 function createCustomCompletionItem(
@@ -226,7 +232,11 @@ export async function activate(context: vscode.ExtensionContext) {
 			}
 
 			// get configuration for workspace scope
-			const hooksDir = vscode.workspace.getConfiguration('GitHooks', workspaceFolder)?.hooksDirectory;
+			let hooksDir: string = vscode.workspace.getConfiguration('GitHooks', workspaceFolder)?.hooksDirectory??"";
+
+			if (process.platform === 'win32') {
+				hooksDir = hooksDir.replace(/^([A-Z]):\\/, (_, drive: string) => `${drive.toLowerCase()}:\\`);
+			}
 
 			if(!hooksDir) {
 				vscode.window.showErrorMessage('hooksDirectory is not valid for this workspace');
