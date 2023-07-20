@@ -4,7 +4,7 @@ All notable changes to the "git-hooks" extension will be documented in this file
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
-### [1.0.1] -- 2023-07-18
+### [1.1.0] -- 2023-07-18
 - Added configuration to set git.core.hooksPath only (at workspace level)
 - CHANGELOG.md format correction
 - Supporting various launguge binaries for shell and shebang suggetions
