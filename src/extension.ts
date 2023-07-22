@@ -11,6 +11,66 @@ function setEditorLaunguage(editor: vscode.TextEditor, language: string) {
 	vscode.languages.setTextDocumentLanguage(editor.document, language);
 }
 
+/**
+ * Handles configuration changes for GitHooks extension.
+ * @param {vscode.ConfigurationChangeEvent} configChange - The configuration change event.
+ * @param {vscode.WorkspaceFolder | undefined} workspaceFolder - The workspace folder.
+ * @param {boolean} intialHooksDirectorySet - A boolean indicating whether the hooks directory has been set initially.
+ * @returns {void}
+ */
+function configurationChangeHandler(configChange: vscode.ConfigurationChangeEvent, workspaceFolder: vscode.WorkspaceFolder | undefined, intialHooksDirectorySet: boolean): void {
+	// get viewContainerDisplay for configChange
+	if (configChange.affectsConfiguration('GitHooks.viewContainerDisplay')) {
+		const viewContainerDisplay = vscode.workspace.getConfiguration('GitHooks')?.['viewContainerDisplay'] ?? true;
+		if (viewContainerDisplay) {
+			vscode.window.showInformationMessage('GitHooks are now moved to activity bar of vscode');
+		} else {
+			vscode.window.showInformationMessage('GitHooks are now moved to Source Control view of vscode');
+		}
+		vscode.commands.executeCommand('setContext', 'GitHooks.viewContainerDisplay', viewContainerDisplay);
+	}
+	if (configChange.affectsConfiguration('GitHooks.hooksDirectory', workspaceFolder)) {
+
+		// get current workspace folder
+		if (!workspaceFolder) {
+			vscode.window.showErrorMessage('hooksDirectory is not valid for this workspace');
+			return;
+		}
+
+		// get configuration for workspace scope
+		let hooksDir: string = vscode.workspace.getConfiguration('GitHooks', workspaceFolder)?.hooksDirectory??"";
+
+		if (process.platform === 'win32') {
+			hooksDir = hooksDir.replace(/^([A-Z]):\\/, (_, drive: string) => `${drive.toLowerCase()}:\\`);
+		}
+
+		if(!hooksDir) {
+			vscode.window.showErrorMessage('hooksDirectory is not valid for this workspace');
+			return;
+		}
+
+		vscode.commands.executeCommand('setContext', 'GitHooks.hooksDirectory', hooksDir);
+		vscode.commands.executeCommand('setContext', 'GitHooks.hooksDirectoryList', [hooksDir]);
+
+		// update hooks directory
+		if (!intialHooksDirectorySet) {
+			// refresh the Hooks Tree provider after setting the hooks directory
+
+			setHooksDir(hooksDir).then(() => {
+				registerHookTreeDataProvider();
+				vscode.window.showInformationMessage(
+					`GitHooks directory is now set to ${hooksDir}`,
+				);
+			});
+		}
+	}
+}
+
+/**
+ * Executes a shell command synchronously.
+ * @param {string} command - The shell command to execute.
+ * @returns {Promise<string>} - A promise that resolves to the output of the shell command.
+ */
 async function executeShellCommandSync(command: string) {
 	let shell;
 	switch (process.platform) {
@@ -30,6 +90,11 @@ async function executeShellCommandSync(command: string) {
 	return await shellComand(command, { shell });
 }
 
+/**
+ * Gets the hooks directory.
+ * @param {boolean} globalFlag - A boolean indicating whether the hooks directory is global.
+ * @returns {Promise<string>} - A promise that resolves to the hooks directory.
+ **/
 async function getHooksDir(globalFlag?: boolean): Promise<string> {
 	// get all files in current workspace
 	// get coreHooksPath by executing this command git config --get core.hooksPath
@@ -212,52 +277,9 @@ export async function activate(context: vscode.ExtensionContext) {
 		}
 		vscode.window.onDidChangeTextEditorSelection(annotateFirstLine, null, context.subscriptions);
 	});
+
 	vscode.workspace.onDidChangeConfiguration((configChange) => {
-		// get viewContainerDisplay for configChange
-		if (configChange.affectsConfiguration('GitHooks.viewContainerDisplay')) {
-			const viewContainerDisplay = vscode.workspace.getConfiguration('GitHooks')?.['viewContainerDisplay'] ?? true;
-			if (viewContainerDisplay) {
-				vscode.window.showInformationMessage('GitHooks are now moved to activity bar of vscode');
-			} else {
-				vscode.window.showInformationMessage('GitHooks are now moved to Source Control view of vscode');
-			}
-			vscode.commands.executeCommand('setContext', 'GitHooks.viewContainerDisplay', viewContainerDisplay);
-		}
-		if (configChange.affectsConfiguration('GitHooks.hooksDirectory', workspaceFolder)) {
-
-			// get current workspace folder
-			if (!workspaceFolder) {
-				vscode.window.showErrorMessage('hooksDirectory is not valid for this workspace');
-				return;
-			}
-
-			// get configuration for workspace scope
-			let hooksDir: string = vscode.workspace.getConfiguration('GitHooks', workspaceFolder)?.hooksDirectory??"";
-
-			if (process.platform === 'win32') {
-				hooksDir = hooksDir.replace(/^([A-Z]):\\/, (_, drive: string) => `${drive.toLowerCase()}:\\`);
-			}
-
-			if(!hooksDir) {
-				vscode.window.showErrorMessage('hooksDirectory is not valid for this workspace');
-				return;
-			}
-
-			vscode.commands.executeCommand('setContext', 'GitHooks.hooksDirectory', hooksDir);
-			vscode.commands.executeCommand('setContext', 'GitHooks.hooksDirectoryList', [hooksDir]);
-
-			// update hooks directory
-			if (!intialHooksDirectorySet) {
-				// refresh the Hooks Tree provider after setting the hooks directory
-
-				setHooksDir(hooksDir).then(() => {
-					registerHookTreeDataProvider();
-					vscode.window.showInformationMessage(
-						`GitHooks directory is now set to ${hooksDir}`,
-					);
-				});
-			}
-		}
+		configurationChangeHandler(configChange, workspaceFolder, intialHooksDirectorySet);
 	});
 
 	// get local hooks path

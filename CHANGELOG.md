@@ -7,6 +7,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 ### [1.1.1] -- 2023-07-18
 - Designed a new logo with new banner color
 - Improved README.md by including description and context of the extension
+- Line decoration for light theme color correction and code refactoring
 
 ### [1.1.0] -- 2023-07-18
 - Added configuration to set git.core.hooksPath only (at workspace level)

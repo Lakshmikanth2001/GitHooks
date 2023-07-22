@@ -4,6 +4,7 @@ release/
 .vscode-test/**
 src/**
 .gitignore
+release/**
 .yarnrc
 vsc-extension-quickstart.md
 **/tsconfig.json
