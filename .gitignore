@@ -4,4 +4,5 @@ node_modules
 .vscode-test/
 *.vsix
 stats.json
+READMEAI.md
 copy_script.sh

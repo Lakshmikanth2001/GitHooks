@@ -4,6 +4,10 @@ All notable changes to the "git-hooks" extension will be documented in this file
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+### [1.1.1] -- 2023-07-18
+- Designed a new logo with new banner color
+- Improved README.md by including description and context of the extension
+
 ### [1.1.0] -- 2023-07-18
 - Added configuration to set git.core.hooksPath only (at workspace level)
 - CHANGELOG.md format correction
