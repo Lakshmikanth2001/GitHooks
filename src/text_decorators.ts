@@ -20,6 +20,13 @@ const lineDecorationType = window.createTextEditorDecorationType({
 			color: '#696969',
 		},
 	},
+	light: {
+		after: {
+			textDecoration: 'none',
+			margin: '0 0 0 3em',
+			color: '#2c3e50',
+		},
+	},
 	overviewRulerLane: OverviewRulerLane.Center,
 	rangeBehavior: DecorationRangeBehavior.ClosedOpen,
 });
