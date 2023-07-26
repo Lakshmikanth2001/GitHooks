@@ -37,7 +37,12 @@
 		"git_hooks",
 		"git hooks",
 		"git hook",
-		"Git Hooks"
+		"Git Hooks",
+		"pre-commit",
+		"pre commit",
+		"pre-push",
+		"pre push",
+		"git guard"
 	],
 	"galleryBanner": {
 		"color": "#F2BE22",

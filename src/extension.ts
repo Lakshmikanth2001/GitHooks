@@ -90,9 +90,13 @@ function toggleView() {
 	// moving the extension from activity bar to Source Control view or vice versa
 	const viewContainerDisplay = vscode.workspace.getConfiguration('GitHooks')?.['viewContainerDisplay'];
 	// change configuration of vscode
+
 	vscode.workspace
 		.getConfiguration('GitHooks')
 		?.update('viewContainerDisplay', !viewContainerDisplay, vscode.ConfigurationTarget.Global);
+
+	// because tool tip needs to be updated
+	registerHookTreeDataProvider();
 }
 
 // this method is called when your extension is activated
