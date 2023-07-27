@@ -9,6 +9,7 @@ import {
 	OverviewRulerLane,
 	DecorationRangeBehavior,
 	TextEditorSelectionChangeEvent,
+	workspace,
 } from 'vscode';
 import { HOOK_MAP } from './hook_description';
 
@@ -70,6 +71,11 @@ function lineAnnotation(activeEditor: TextEditor, contentText: string): void {
 						contentText: contentText,
 					},
 				},
+				light: {
+					after: {
+						contentText: contentText,
+					},
+				},
 			},
 		},
 	];
@@ -101,7 +107,9 @@ function onLaunguageChange(event: TextDocument) {
 		return;
 	}
 
-	if (fileName.indexOf('hooks') === -1 || fileName.indexOf('.git') === -1) {
+	const predefinedHooks: string[] = workspace.getConfiguration('GitHooks')?.['predefinedHooks'] ?? [];
+
+	if (!predefinedHooks.includes(fileName.replace(".sample", ""))) {
 		return;
 	}
 

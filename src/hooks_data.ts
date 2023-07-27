@@ -3,6 +3,9 @@ import * as path from 'path';
 import * as fs from 'fs';
 import { ViewBadge } from 'vscode';
 
+let gitHookScmTreeViewRendered = false;
+let gitHookContainerTreeViewRendered = false;
+
 export class Hook extends vscode.TreeItem {
 	constructor(
 		public readonly label: string,
@@ -32,34 +35,43 @@ export function validViewBadgeVersion(): boolean {
 	return true;
 }
 
-export function registerHookTreeDataProvider(): vscode.TreeView<Hook>|void {
+export function registerHookTreeDataProvider(reloadFlag: boolean = false) {
 	const workingDir = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
 	if (!workingDir) {
 		vscode.window.showInformationMessage('Empty workspace can not have git hooks');
 		return ;
 	}
+
+	if(!reloadFlag && gitHookScmTreeViewRendered && gitHookContainerTreeViewRendered){
+		return;
+	}
+
 	const viewContainerDisplay = vscode.workspace.getConfiguration('GitHooks')?.['viewContainerDisplay'] ?? true;
 
 	if (!viewContainerDisplay) {
-		return vscode.window.createTreeView('git_hooks_scm', {
+		const scmHookProvider = vscode.window.createTreeView('git_hooks_scm', {
 			treeDataProvider: new GitHooksProvider(workingDir, true),
 		});
+		// clear the badge for scm
+		scmHookProvider.badge = { value: 0, tooltip: '' };
+		gitHookScmTreeViewRendered = true;
+		return;
 	}
 
 	const coreHooksProvider = new GitHooksProvider(workingDir, false);
 	const coreHookTreeView = vscode.window.createTreeView('git_hooks_view', {
 		treeDataProvider: coreHooksProvider,
 	});
+	gitHookContainerTreeViewRendered = true;
 
 	if (validViewBadgeVersion()) {
 		const activeHookCount = coreHooksProvider.activeHookCount;
 		const iconBadge: ViewBadge = {
 			value: activeHookCount,
-			tooltip: `${activeHookCount} ActiveHooks`,
+			tooltip: `${activeHookCount} ActiveHook${activeHookCount === 1 ? '' : 's'}`,
 		};
 		coreHookTreeView.badge = activeHookCount > 0 ? iconBadge : { value: 0, tooltip: '' };
 	}
-	return coreHookTreeView
 }
 export class GitHooksProvider implements vscode.TreeDataProvider<Hook> {
 	public activeHookCount: number = 0;
@@ -81,8 +93,8 @@ export class GitHooksProvider implements vscode.TreeDataProvider<Hook> {
 			if(hook.indexOf(".sample") === -1 && this.predefinedHooksMap.get(hook.replace(".sample", ""))){
 				this.activeHookCount++;
 			}
-			return hook
-		})
+			return hook;
+		});
 	}
 
 	private onActivateWorkspaceChanged(e: vscode.WorkspaceFoldersChangeEvent | undefined): void {

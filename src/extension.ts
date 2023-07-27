@@ -27,6 +27,7 @@ function configurationChangeHandler(configChange: vscode.ConfigurationChangeEven
 		} else {
 			vscode.window.showInformationMessage('GitHooks are now moved to Source Control view of vscode');
 		}
+		registerHookTreeDataProvider();
 		vscode.commands.executeCommand('setContext', 'GitHooks.viewContainerDisplay', viewContainerDisplay);
 	}
 	if (configChange.affectsConfiguration('GitHooks.hooksDirectory', workspaceFolder)) {
@@ -134,13 +135,23 @@ async function setHooksDir(hooksDirectory : string): Promise<String>{
 	return await executeShellCommandSync(`cd ${workingDir.uri.fsPath} && git config core.hooksPath ${hooksDirectory} &2>/dev/null`);
 }
 
+
+/**
+ * Creates a custom completion item for a snippet.
+ * @param {string} snippetName - The name of the snippet.
+ * @param {vscode.CompletionItemKind} completionKind - The kind of completion item.
+ * @param {string | undefined} insertText - The text to insert for the completion item.
+ * @param {string} detail - The detail information for the completion item.
+ * @param {vscode.MarkdownString} documentation - The documentation for the completion item.
+ * @returns {vscode.CompletionItem} - The custom completion item.
+ */
 function createCustomCompletionItem(
 	snippetName: string,
 	completionKind: vscode.CompletionItemKind,
 	insertText: string | undefined,
 	detail: string,
 	documentation: vscode.MarkdownString,
-) {
+): vscode.CompletionItem {
 	const customCompletionItem = new vscode.CompletionItem(snippetName, completionKind);
 
 	// provide details about the inserted snippet
@@ -156,12 +167,10 @@ function toggleView() {
 	const viewContainerDisplay = vscode.workspace.getConfiguration('GitHooks')?.['viewContainerDisplay'];
 	// change configuration of vscode
 
-	vscode.workspace
-		.getConfiguration('GitHooks')
-		?.update('viewContainerDisplay', !viewContainerDisplay, vscode.ConfigurationTarget.Global);
-
 	// because tool tip needs to be updated
-	registerHookTreeDataProvider();
+	const currentConfiguration = vscode.workspace.getConfiguration('GitHooks');
+
+	currentConfiguration?.update('viewContainerDisplay', !viewContainerDisplay, vscode.ConfigurationTarget.Global);
 }
 
 // this method is called when your extension is activated
@@ -249,8 +258,7 @@ export async function activate(context: vscode.ExtensionContext) {
 							`#!${codePath}`,
 							`${launguages[index]} shebang text`,
 							new vscode.MarkdownString(
-								`This is a Text Snippet for getting shebang text of ${launguages[index]}
-											which can be instered at the first line`,
+								`This is a Text Snippet for getting shebang text of ${launguages[index]} which can be inserted at the first line`,
 							),
 						);
 						return [shellCompletionItem, shebangCompletionItem];
@@ -292,6 +300,10 @@ export async function activate(context: vscode.ExtensionContext) {
 	vscode.workspace
 	.getConfiguration('GitHooks', workspaceFolder)
 	?.update('hooksDirectory', hooksDir, vscode.ConfigurationTarget.Workspace);
+
+	//adding initial context
+	vscode.commands.executeCommand('setContext', 'GitHooks.hooksDirectory', hooksDir);
+	vscode.commands.executeCommand('setContext', 'GitHooks.hooksDirectoryList', [hooksDir]);
 
 	registerHookTreeDataProvider();
 	intialHooksDirectorySet = false;

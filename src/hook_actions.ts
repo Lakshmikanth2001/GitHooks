@@ -139,9 +139,8 @@ function toggleHook(hook: Hook) {
 		}
 		// rebuild the TreeDataProvider
 
-		vscode.workspace.getConfiguration('GitHooks')?.update('GitHooks.hooksDirectory', hooksDir, vscode.ConfigurationTarget.Workspace);
-
-		registerHookTreeDataProvider();
+		// vscode.workspace.getConfiguration('GitHooks')?.update('GitHooks.hooksDirectory', hooksDir, vscode.ConfigurationTarget.Workspace);
+		registerHookTreeDataProvider(true);
 		// vscode.window.registerTreeDataProvider('git_hooks_view', new GitHooksProvider(workingDir.uri.fsPath, false));
 		// vscode.window.registerTreeDataProvider('git_hooks_scm', new GitHooksProvider(workingDir.uri.fsPath, true));
 	});
@@ -172,7 +171,7 @@ function reloadHooks() {
 	const workingDir = vscode.workspace.workspaceFolders?.[0] ?? '';
 	if (workingDir) {
 		// rebuild the TreeDataProvider
-		registerHookTreeDataProvider();
+		registerHookTreeDataProvider(true);
 	}
 }
 

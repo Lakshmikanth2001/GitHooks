@@ -2,7 +2,7 @@
 	"name": "githooks",
 	"displayName": "GitHooks -- Simple VS Code UI for git hooks which can prevent your git repository from potential issues and enforce code quality.",
 	"description": "Integrating Git Hooks to vscode UI; Can View, Edit and Run your local Git Hooks",
-	"version": "1.1.1",
+	"version": "1.2.0",
 	"license": "SEE LICENSE IN LICENSE",
 	"publisher": "lakshmikanthayyadevara",
 	"main": "./out/extension.js",
@@ -45,7 +45,7 @@
 		"git guard"
 	],
 	"galleryBanner": {
-		"color": "#F2BE22",
+		"color": "#1B6B93",
 		"theme": "dark"
 	},
 	"contributes": {

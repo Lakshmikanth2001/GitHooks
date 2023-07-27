@@ -4,6 +4,13 @@ All notable changes to the "git-hooks" extension will be documented in this file
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+### [1.2.0] -- 2023-07-27
+- Improve startup performance by caching git hooks directory reads
+- conditionally render `git_hooks_scm` and `git_hooks_view` based on configuration
+- Bug fix for `ViewBadge` count when non-predefined hooks are present
+- Computing `ActiveHooksCount` in `GitHooksProvider` class constructor
+- tooltip correction while changing from `git_hooks_scm` to `git_hooks_view`(buggy for now)
+
 ### [1.1.1] -- 2023-07-18
 - Designed a new logo with new banner color
 - Improved README.md by including description and context of the extension
