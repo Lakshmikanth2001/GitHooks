@@ -53,7 +53,7 @@ export function registerHookTreeDataProvider(reloadFlag: boolean = false) {
 			treeDataProvider: new GitHooksProvider(workingDir, true),
 		});
 		// clear the badge for scm
-		scmHookProvider.badge = { value: 0, tooltip: '' };
+		// scmHookProvider.badge = { value: 0, tooltip: '' };
 		gitHookScmTreeViewRendered = true;
 		return;
 	}

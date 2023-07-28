@@ -4,6 +4,10 @@ All notable changes to the "git-hooks" extension will be documented in this file
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+
+### [1.2.1] -- 2023-07-28
+- Bug fix for `git_hooks_scm` icon display in `ActivityBar`(SCM view badge was removed because of this bug)
+
 ### [1.2.0] -- 2023-07-27
 - Improve startup performance by caching git hooks directory reads
 - conditionally render `git_hooks_scm` and `git_hooks_view` based on configuration
