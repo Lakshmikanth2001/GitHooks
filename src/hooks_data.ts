@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
 import { ViewBadge } from 'vscode';
+import { logger } from './logger';
 
 let gitHookScmTreeViewRendered = false;
 let gitHookContainerTreeViewRendered = false;
@@ -49,7 +50,7 @@ export function registerHookTreeDataProvider(reloadFlag: boolean = false) {
 	const viewContainerDisplay = vscode.workspace.getConfiguration('GitHooks')?.['viewContainerDisplay'] ?? true;
 
 	if (!viewContainerDisplay) {
-		const scmHookProvider = vscode.window.createTreeView('git_hooks_scm', {
+		vscode.window.createTreeView('git_hooks_scm', {
 			treeDataProvider: new GitHooksProvider(workingDir, true),
 		});
 		// clear the badge for scm
@@ -76,7 +77,7 @@ export function registerHookTreeDataProvider(reloadFlag: boolean = false) {
 export class GitHooksProvider implements vscode.TreeDataProvider<Hook> {
 	public activeHookCount: number = 0;
 	private gitHooksDir: string;
-	private gitHooksDirectoryFiles: string[];
+	private gitHooksDirectoryFiles: string[]|undefined;
 	private predefinedHooksMap: Map<String, boolean>;
 
 	// get extension context
@@ -89,12 +90,18 @@ export class GitHooksProvider implements vscode.TreeDataProvider<Hook> {
 
 		this.predefinedHooksMap = new Map(predefinedHooks.map(hook => [hook, true]));
 
+		if(!fs.existsSync(this.gitHooksDir)){
+			logger.error("Unable to read hooks directory : " + this.gitHooksDir);
+			return ;
+		}
+
 		this.gitHooksDirectoryFiles = fs.readdirSync(this.gitHooksDir).map(hook => {
 			if(hook.indexOf(".sample") === -1 && this.predefinedHooksMap.get(hook.replace(".sample", ""))){
 				this.activeHookCount++;
 			}
 			return hook;
 		});
+		logger.debug("Active Hooks Count : " + this.activeHookCount.toString());
 	}
 
 	private onActivateWorkspaceChanged(e: vscode.WorkspaceFoldersChangeEvent | undefined): void {
@@ -118,7 +125,7 @@ export class GitHooksProvider implements vscode.TreeDataProvider<Hook> {
 		if (!this.workspaceRoot) {
 			vscode.window.showInformationMessage('Empty workspace can not have git hooks');
 			return Promise.resolve([]);
-		} else if (!this.pathExists(path.join(this.workspaceRoot, '.git'))) {
+		} else if (!fs.existsSync(path.join(this.workspaceRoot, '.git'))) {
 			vscode.window.showInformationMessage('No git repository in workspace');
 			return Promise.resolve([]);
 		}
@@ -147,7 +154,7 @@ export class GitHooksProvider implements vscode.TreeDataProvider<Hook> {
 
 	private getHooks(hooksPath: string): Hook[] {
 
-		if (!this.pathExists(hooksPath)) {
+		if (!fs.existsSync(hooksPath) || this.gitHooksDirectoryFiles === undefined) {
 			vscode.window.showInformationMessage('No hooks in empty workspace');
 			return [];
 		}
@@ -183,14 +190,6 @@ export class GitHooksProvider implements vscode.TreeDataProvider<Hook> {
 
 		// check whether git_dir exists or not
 		let gitDir = path.join(workingDir, '.git');
-		return this.pathExists(gitDir);
-	}
-	private pathExists(p: string): boolean {
-		try {
-			fs.accessSync(p);
-		} catch (err) {
-			return false;
-		}
-		return true;
+		return fs.existsSync(gitDir);
 	}
 }

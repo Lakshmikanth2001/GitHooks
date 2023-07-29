@@ -6,6 +6,7 @@ import { registerHookTreeDataProvider } from './hooks_data';
 import { annotateFirstLine, clearLineAnnotation, initialAnnotation } from './text_decorators';
 import { openHook, runHook, toggleHook, reloadHooks, hookDescription, runCurrentHook } from './hook_actions';
 import { shellComand } from './launguages';
+import { logger } from './logger';
 
 function setEditorLaunguage(editor: vscode.TextEditor, language: string) {
 	vscode.languages.setTextDocumentLanguage(editor.document, language);
@@ -62,6 +63,9 @@ function configurationChangeHandler(configChange: vscode.ConfigurationChangeEven
 				vscode.window.showInformationMessage(
 					`GitHooks directory is now set to ${hooksDir}`,
 				);
+			}).catch((err) => {
+				logger.error(`Unable to set core.hooksPath git configuration to ${hooksDir}`);
+				logger.error(`${err}`);
 			});
 		}
 	}
@@ -72,7 +76,7 @@ function configurationChangeHandler(configChange: vscode.ConfigurationChangeEven
  * @param {string} command - The shell command to execute.
  * @returns {Promise<string>} - A promise that resolves to the output of the shell command.
  */
-async function executeShellCommandSync(command: string) {
+async function executeShellCommandSync(command: string): Promise<string>{
 	let shell;
 	switch (process.platform) {
 		case 'win32':
@@ -178,7 +182,8 @@ function toggleView() {
 export async function activate(context: vscode.ExtensionContext) {
 	// Use the console to output diagnostic information (console.log) and errors (console.error)
 	// This line of code will only be executed once when your extension is activate
-	console.log('Congratulations, your extension "git-hooks" is now active!');
+	logger.configure("debug", vscode.window.createOutputChannel("GitHooks"));
+	logger.debug("GitHooks extension is now active!");
 
 	const launguages: Array<String> = vscode.workspace.getConfiguration('GitHooks')?.['languageBinaries'] ?? [];
 	// take the first workspace folder
@@ -233,7 +238,7 @@ export async function activate(context: vscode.ExtensionContext) {
 	codePathsPromise.then((codePromiseResults) => {
 		codePromiseResults.forEach((promiseResult, index) => {
 			if (promiseResult.status !== 'fulfilled') {
-				console.error(`unable to detect ${launguages[index]} launguage path`);
+				logger.warn(`unable to detect ${launguages[index]} launguage path`);
 				return;
 			}
 
@@ -294,23 +299,26 @@ export async function activate(context: vscode.ExtensionContext) {
 		configurationChangeHandler(configChange, workspaceFolder, intialHooksDirectorySet);
 	});
 
-	// get local hooks path
-	const hooksDir = await getHooksDir();
-
-	vscode.workspace
-	.getConfiguration('GitHooks', workspaceFolder)
-	?.update('hooksDirectory', hooksDir, vscode.ConfigurationTarget.Workspace);
-
-	//adding initial context
-	vscode.commands.executeCommand('setContext', 'GitHooks.hooksDirectory', hooksDir);
-	vscode.commands.executeCommand('setContext', 'GitHooks.hooksDirectoryList', [hooksDir]);
-
-	registerHookTreeDataProvider();
-	intialHooksDirectorySet = false;
-
 	vscode.workspace.onDidOpenTextDocument((e) => {
 		initialAnnotation();
 	});
+
+	// get local hooks path
+	getHooksDir().then((hooksDir) => {
+		vscode.workspace
+		.getConfiguration('GitHooks', workspaceFolder)
+		?.update('hooksDirectory', hooksDir, vscode.ConfigurationTarget.Workspace);
+
+		//adding initial context
+		vscode.commands.executeCommand('setContext', 'GitHooks.hooksDirectory', hooksDir);
+		vscode.commands.executeCommand('setContext', 'GitHooks.hooksDirectoryList', [hooksDir]);
+
+		registerHookTreeDataProvider();
+		intialHooksDirectorySet = false;
+	}).catch((err) => {
+		logger.error(`Unable to read or locate hooksDirectory failed with following error : \n ${err}`);
+	});
+
 	// get workspace Extension context
 	const viewContainerDisplay = vscode.workspace.getConfiguration('GitHooks')?.['viewContainerDisplay'] ?? true;
 	vscode.commands.executeCommand('setContext', 'GitHooks.viewContainerDisplay', viewContainerDisplay);
@@ -327,5 +335,5 @@ export async function activate(context: vscode.ExtensionContext) {
 
 // this method is called when your extension is deactivated
 export function deactivate() {
-	console.log('git hooks are deactivate');
+	logger.debug('git hooks are deactivate');
 }

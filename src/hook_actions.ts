@@ -3,13 +3,16 @@ import { shellComand } from './launguages';
 import * as fs from 'fs';
 import * as vscode from 'vscode';
 import * as path from 'path';
+import { logger } from './logger';
 
 const POST_HOOKS = ['pre-receive', 'update', 'proc-receive', 'post-receive', 'post-update'];
 
 let isGitHooksRunCompatabile: boolean | null = null;
 
+
 async function checkGitVersion(): Promise<boolean> {
 	let gitVersion: string = await shellComand('git --version');
+	logger.info(`${gitVersion}`);
 	const [, , version]: string[] = gitVersion.split(' ');
 
 	const [majorRelease, subRelease, releaseFix]: string[] = version.split('.');
