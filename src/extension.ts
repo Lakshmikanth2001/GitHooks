@@ -1,5 +1,7 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
+import * as os from 'os';
+import * as fs from 'fs';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import { registerHookTreeDataProvider } from './hooks_data';
@@ -50,6 +52,17 @@ function configurationChangeHandler(configChange: vscode.ConfigurationChangeEven
 			vscode.window.showErrorMessage('hooksDirectory is not valid for this workspace');
 			return;
 		}
+
+		// if path containes ~ then replace it with user home directory
+		if (process.platform !== 'win32' && hooksDir.startsWith('~')) {
+			hooksDir = hooksDir.replace(/^~/, os.homedir());
+		}
+
+		// if hooksDirectory is relative path then make it absolute path
+		if(!path.isAbsolute(hooksDir)){
+			hooksDir = path.resolve(workspaceFolder.uri.fsPath, hooksDir);
+		}
+		logger.info(`core.hooksPath is set to ${hooksDir}`);
 
 		vscode.commands.executeCommand('setContext', 'GitHooks.hooksDirectory', hooksDir);
 		vscode.commands.executeCommand('setContext', 'GitHooks.hooksDirectoryList', [hooksDir]);
@@ -136,6 +149,15 @@ async function setHooksDir(hooksDirectory : string): Promise<String>{
 		hooksDirectory = hooksDirectory?.split(path.sep).join(path.posix.sep);
 	}
 
+	// check if hooks directory exists
+	if(!fs.existsSync(hooksDirectory)){
+		return Promise.reject(`hooks directory ${hooksDirectory} does not exists`);
+	}
+
+	if(!fs.statSync(hooksDirectory).isDirectory()){
+		return Promise.reject(`${hooksDirectory} is not a directory`);
+	}
+
 	return await executeShellCommandSync(`cd ${workingDir.uri.fsPath} && git config core.hooksPath ${hooksDirectory} &2>/dev/null`);
 }
 
@@ -182,8 +204,8 @@ function toggleView() {
 export async function activate(context: vscode.ExtensionContext) {
 	// Use the console to output diagnostic information (console.log) and errors (console.error)
 	// This line of code will only be executed once when your extension is activate
-	logger.configure("debug", vscode.window.createOutputChannel("GitHooks"));
-	logger.debug("GitHooks extension is now active!");
+	logger.configure("info", vscode.window.createOutputChannel("GitHooks"));
+	logger.info("GitHooks extension is now active!");
 
 	const launguages: Array<String> = vscode.workspace.getConfiguration('GitHooks')?.['languageBinaries'] ?? [];
 	// take the first workspace folder
@@ -305,9 +327,30 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	// get local hooks path
 	getHooksDir().then((hooksDir) => {
-		vscode.workspace
-		.getConfiguration('GitHooks', workspaceFolder)
-		?.update('hooksDirectory', hooksDir, vscode.ConfigurationTarget.Workspace);
+
+		const currentConfiguration = vscode.workspace
+		.getConfiguration('GitHooks', workspaceFolder);
+
+		let currentHooksDir = currentConfiguration?.['hooksDirectory']??"";
+
+		if(!path.isAbsolute(currentHooksDir)){
+			currentHooksDir = path.resolve(workspaceFolder?.uri.fsPath??"", currentHooksDir);
+		}
+
+		// if hooks directory is not set in configuration
+		if(!currentConfiguration?.['hooksDirectory']??false) {
+			currentConfiguration?.update('hooksDirectory', hooksDir, vscode.ConfigurationTarget.Workspace);
+		}
+
+		if(path.isAbsolute(currentHooksDir) && currentHooksDir !== hooksDir){
+			// mismatch in hooks directory configuration
+
+			// update the configuration with git config core.hooksPath
+			logger.warn(`GitHooks: hooksDirectory configuration mismatch with git config core.hooksPath`);
+			vscode.window.showWarningMessage(`GitHooks: hooksDirectory configuration is not matching with git config core.hooksPath. Updating the configuration with git config core.hooksPath value`);
+
+			currentConfiguration?.update('hooksDirectory', hooksDir, vscode.ConfigurationTarget.Workspace);
+		}
 
 		//adding initial context
 		vscode.commands.executeCommand('setContext', 'GitHooks.hooksDirectory', hooksDir);

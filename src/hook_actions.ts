@@ -1,4 +1,4 @@
-import { Hook,  registerHookTreeDataProvider} from './hooks_data';
+import { Hook,  registerHookTreeDataProvider, getAbsoluteHooksDir} from './hooks_data';
 import { shellComand } from './launguages';
 import * as fs from 'fs';
 import * as vscode from 'vscode';
@@ -23,7 +23,7 @@ async function checkGitVersion(): Promise<boolean> {
 }
 
 async function openHook(hook: Hook) {
-	const gitHookDir = vscode.workspace.getConfiguration('GitHooks')?.['hooksDirectory'];
+	const gitHookDir = getAbsoluteHooksDir();
 	vscode.workspace.openTextDocument(path.join(gitHookDir, hook.label)).then((doc) => {
 		vscode.window.showTextDocument(doc).then((editor) => {
 			// create a vscode snippet
@@ -40,7 +40,7 @@ function conventionalHookRun(hook: Hook) {
 	let terminal: vscode.Terminal;
 
 	// get vscode context
-	let hooksPath = vscode.workspace.getConfiguration('GitHooks')?.['hooksDirectory'] ?? "";
+	let hooksPath = getAbsoluteHooksDir();
 	let workspaceFolder = vscode.workspace.workspaceFolders?.[0].uri.fsPath;
 	let currentTestHookPath = path.join(hooksPath, `test_${hook.label}`);
 
@@ -123,7 +123,7 @@ async function runCurrentHook(){
 
 function toggleHook(hook: Hook) {
 	// get hooksDir from vscode context
-	const hooksDir = vscode.workspace.getConfiguration('GitHooks')?.['hooksDirectory'] ?? "";
+	const hooksDir = getAbsoluteHooksDir();
 
 	let oldPath = '';
 	let newPath = '';

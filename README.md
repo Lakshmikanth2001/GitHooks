@@ -43,8 +43,11 @@ The GitHooks extension for Visual Studio Code provides a user interface (UI) to 
 A big thanks to the people who have contributed to this project 🙏🏽🙏🏽🙏🏽👨🏽‍💻🧑🏽‍💻:
 
 - ChatGPT ([@ChatGPT](https://chat.openai.com/)) for improving `README.md`
+- GitHub Copilot ([@ChatGPT](https://chat.openai.com/)) for improving code quality and suggesting various code snippets
 
 ### By Reporting Issues and Bugs
+
+AquilaSands and ionutz89 ([@AquilaSands](https://github.com/AquilaSands)) and ([@ionutz89](https://github.com/ionutz89)) &mdash; [Bug](https://github.com/Lakshmikanth2001/GitHooks/issues/12)
 
 Paul-Joseph de Werk ([@DraakUSA](https://github.com/DraakUSA)) &mdash; [Bug](https://github.com/Lakshmikanth2001/GitHooks/issues/9)
 

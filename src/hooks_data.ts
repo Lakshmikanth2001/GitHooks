@@ -1,6 +1,7 @@
+import * as fs from 'fs';
+import * as os from 'os';
 import * as vscode from 'vscode';
 import * as path from 'path';
-import * as fs from 'fs';
 import { ViewBadge } from 'vscode';
 import { logger } from './logger';
 
@@ -20,6 +21,21 @@ export class Hook extends vscode.TreeItem {
 	//vscode Theme color green
 	iconPath: vscode.ThemeIcon = new vscode.ThemeIcon('circle-large-outline');
 	contextValue?: string | undefined = 'hook';
+}
+
+export function getAbsoluteHooksDir(): string {
+
+	const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+
+	let currentHooksDir = vscode.workspace
+	.getConfiguration('GitHooks', workspaceFolder)?.['hooksDirectory'];
+
+	currentHooksDir = currentHooksDir.replace(/^~/, os.homedir());
+
+	if(!path.isAbsolute(currentHooksDir)){
+		currentHooksDir = path.resolve(workspaceFolder?.uri.fsPath??"", currentHooksDir);
+	}
+	return currentHooksDir;
 }
 
 export function validViewBadgeVersion(): boolean {
@@ -84,7 +100,7 @@ export class GitHooksProvider implements vscode.TreeDataProvider<Hook> {
 	constructor(private workspaceRoot: string, private isFromScm: boolean) {
 		vscode.workspace.onDidChangeWorkspaceFolders((e) => this.onActivateWorkspaceChanged(e));
 		this.onActivateWorkspaceChanged(undefined);
-		this.gitHooksDir = vscode.workspace.getConfiguration('GitHooks')?.get('hooksDirectory') ?? '';
+		this.gitHooksDir = getAbsoluteHooksDir();
 
 		const predefinedHooks: string[] = vscode.workspace.getConfiguration('GitHooks')?.['predefinedHooks'] ?? [];
 
