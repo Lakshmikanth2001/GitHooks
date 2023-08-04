@@ -1,7 +1,7 @@
 {
 	"name": "githooks",
-	"displayName": "GitHooks -- Simple VS Code UI for git hooks which can prevent your git repository from potential issues and enforce code quality.",
-	"description": "Integrating Git Hooks to vscode UI; Can View, Edit and Run your local Git Hooks",
+	"displayName": "GitHooks -- Simple VS Code UI for git hooks.",
+	"description": "Integrating Git Hooks to vscode UI; Can View, Edit and Run your local Git Hooks which can prevent your git repository from potential issues and enforce code quality.",
 	"version": "1.3.1",
 	"license": "SEE LICENSE IN LICENSE",
 	"publisher": "lakshmikanthayyadevara",
@@ -135,14 +135,16 @@
 				{
 					"id": "git_hooks_view",
 					"name": "Git Hooks",
-					"when": "workSpaceHasGit && GitHooks.viewContainerDisplay"
+					"when": "workSpaceHasGit && GitHooks.viewContainerDisplay",
+					"visibility": "visible"
 				}
 			],
 			"scm": [
 				{
 					"id": "git_hooks_scm",
 					"name": "Git Hooks",
-					"when": "workSpaceHasGit && !GitHooks.viewContainerDisplay"
+					"when": "workSpaceHasGit && !GitHooks.viewContainerDisplay",
+					"visibility": "visible"
 				}
 			]
 		},

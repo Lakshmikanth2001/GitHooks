@@ -66,9 +66,12 @@ export function registerHookTreeDataProvider(reloadFlag: boolean = false) {
 	const viewContainerDisplay = vscode.workspace.getConfiguration('GitHooks')?.['viewContainerDisplay'] ?? true;
 
 	if (!viewContainerDisplay) {
-		vscode.window.createTreeView('git_hooks_scm', {
-			treeDataProvider: new GitHooksProvider(workingDir, true),
+		let scmHookProvider = new GitHooksProvider(workingDir, true);
+		const gitHooksSCMView = vscode.window.createTreeView('git_hooks_scm', {
+			treeDataProvider: scmHookProvider,
 		});
+		gitHooksSCMView.title = `GitHooks (${scmHookProvider.activeHookCount})`;
+		gitHooksSCMView.description = getAbsoluteHooksDir();
 		// clear the badge for scm
 		// scmHookProvider.badge = { value: 0, tooltip: '' };
 		gitHookScmTreeViewRendered = true;
@@ -155,8 +158,9 @@ export class GitHooksProvider implements vscode.TreeDataProvider<Hook> {
 
 		if (!element) {
 			// for the root element with label githooks on the top
-			let hook = new Hook('Git Hooks', '', vscode.TreeItemCollapsibleState.Collapsed);
+			let hook = new Hook('Hooks', '', vscode.TreeItemCollapsibleState.Expanded);
 			hook.contextValue = 'root';
+			hook.description = getAbsoluteHooksDir();
 
 			if(this.activeHookCount > 0){
 				hook.iconPath = new vscode.ThemeIcon('testing-passed-icon', new vscode.ThemeColor('#RRGGBBAA'));
