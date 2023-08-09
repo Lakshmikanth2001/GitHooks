@@ -138,6 +138,11 @@ async function getHooksDir(globalFlag?: boolean): Promise<string> {
 	return hooksPath;
 }
 
+/**
+ * Sets the Git hooks directory path by configuring the `core.hooksPath` property.
+ * @param hooksDirectory - The path to the Git hooks directory.
+ * @returns A Promise that resolves to the path of the Git hooks directory if successful, or rejects with an error message if unsuccessful.
+ */
 async function setHooksDir(hooksDirectory : string): Promise<String>{
 	// set git config core.hooksPath
 	const workingDir = vscode.workspace.workspaceFolders?.[0] ?? '';
@@ -204,34 +209,19 @@ function toggleView() {
 export async function activate(context: vscode.ExtensionContext) {
 	// Use the console to output diagnostic information (console.log) and errors (console.error)
 	// This line of code will only be executed once when your extension is activate
-	logger.configure("debug", vscode.window.createOutputChannel("GitHooks"));
+
+	const logLevel = vscode.workspace.getConfiguration('GitHooks')?.['logLevel'] ?? 'info';
+	logger.configure(logLevel, vscode.window.createOutputChannel("GitHooks"));
 	logger.info("GitHooks extension is now active!");
 
-	const launguages: Array<String> = vscode.workspace.getConfiguration('GitHooks')?.['languageBinaries'] ?? [];
+	const languages: Array<String> = vscode.workspace.getConfiguration('GitHooks')?.['languageBinaries'] ?? [];
 	// take the first workspace folder
 	const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
 
 	let intialHooksDirectorySet = true;
 
 	let codePathsPromise = Promise.allSettled(
-		launguages.map((launguage) => {
-			let shell;
-			switch (process.platform) {
-				case 'win32':
-					shell = 'C:\\Program Files\\Git\\bin\\bash';
-					break;
-				case 'darwin':
-					shell = '/bin/bash';
-					break;
-				case 'linux':
-					shell = '/usr/bin/bash';
-					break;
-				default:
-					vscode.window.showErrorMessage('Unknown OS cannot detect bash shell');
-					return;
-			}
-			return shellComand(`which ${launguage}`, { shell });
-		}),
+		languages.map((launguage) => executeShellCommandSync(`which ${launguage}`)),
 	);
 
 	const datetimeSnippetProvider = vscode.languages.registerCompletionItemProvider(
@@ -260,41 +250,44 @@ export async function activate(context: vscode.ExtensionContext) {
 	codePathsPromise.then((codePromiseResults) => {
 		codePromiseResults.forEach((promiseResult, index) => {
 			if (promiseResult.status !== 'fulfilled') {
-				logger.warn(`unable to detect ${launguages[index]} launguage path`);
+				logger.warn(`unable to detect ${languages[index]} launguage path`);
 				return;
 			}
 
 			let codePath = promiseResult.value;
-			let launguageSnippetProvider = vscode.languages.registerCompletionItemProvider(
+			let languageSnippetProvider = vscode.languages.registerCompletionItemProvider(
 				{
 					scheme: 'file',
 				},
 				{
 					provideCompletionItems(document: vscode.TextDocument, position: vscode.Position) {
 						const shellCompletionItem = createCustomCompletionItem(
-							`shell-${launguages[index]} 🐚`,
+							`shell-${languages[index]} 🐚`,
 							vscode.CompletionItemKind.Text,
 							codePath,
-							`${launguages[index]} shell path`,
-							new vscode.MarkdownString(`This is a Text Snippet for getting system path of ${launguages[index]}`),
+							`${languages[index]} shell path`,
+							new vscode.MarkdownString(`This is a Text Snippet for getting system path of ${languages[index]}`),
 						);
 
-						const shebangCompletionItem = createCustomCompletionItem(
-							`shebang-${launguages[index]}`,
-							vscode.CompletionItemKind.Constant,
-							`#!${codePath}`,
-							`${launguages[index]} shebang text`,
-							new vscode.MarkdownString(
-								`This is a Text Snippet for getting shebang text of ${launguages[index]} which can be inserted at the first line`,
-							),
-						);
-						return [shellCompletionItem, shebangCompletionItem];
+						if(position.line === 0){
+							const shebangCompletionItem = createCustomCompletionItem(
+								`shebang-${languages[index]}`,
+								vscode.CompletionItemKind.Constant,
+								`#!${codePath}`,
+								`${languages[index]} shebang text`,
+								new vscode.MarkdownString(
+									`This is a Text Snippet for getting shebang text of ${languages[index]} which can be inserted at the first line`,
+								),
+							);
+							return [shellCompletionItem, shebangCompletionItem];
+						}
+						return [shellCompletionItem];
 					},
 				},
 				`shell`,
 				`shebang`,
 			);
-			context.subscriptions.push(launguageSnippetProvider);
+			context.subscriptions.push(languageSnippetProvider);
 		});
 	});
 

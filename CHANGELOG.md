@@ -4,6 +4,13 @@ All notable changes to the "git-hooks" extension will be documented in this file
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+### [1.3.3] -- 2023-08-09
+- Added `GitHooks.logLevel` configuration to set the log level of the extension.
+- Render `shebang` snippet only on the first line of the file.
+- Removed a bug that caused badge rendering issues when toggling the view from SCM to Core View.
+- Cached the hookProvider.
+- Removed an unnecessary activeHooks increment in the getHooks private method.
+
 ### [1.3.2] -- 2023-08-04
 - `visibility` of SCM and ActivityBar is now expanded by default
 - Added context to Activity bar and title to SCM View

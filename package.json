@@ -2,7 +2,7 @@
 	"name": "githooks",
 	"displayName": "GitHooks -- Simple VS Code UI for git hooks.",
 	"description": "Integrating Git Hooks to vscode UI; Can View, Edit and Run your local Git Hooks which can prevent your git repository from potential issues and enforce code quality.",
-	"version": "1.3.2",
+	"version": "1.3.3",
 	"license": "SEE LICENSE IN LICENSE",
 	"publisher": "lakshmikanthayyadevara",
 	"main": "./out/extension.js",
@@ -236,6 +236,17 @@
 						"bash"
 					],
 					"description": "Installed language binaries to view shell path and shebang suggetions"
+				},
+				"GitHooks.logLevel": {
+					"type": "string",
+					"enum": [
+						"error",
+						"warn",
+						"info",
+						"debug"
+					],
+					"default": "info",
+					"description": "configuration to set log level in `GitHooks` output channel (used for extension debugging)"
 				}
 			}
 		},
