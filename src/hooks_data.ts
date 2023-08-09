@@ -194,6 +194,7 @@ export class GitHooksProvider implements vscode.TreeDataProvider<Hook> {
 			let hook = new Hook('Hooks', '', vscode.TreeItemCollapsibleState.Expanded);
 			hook.contextValue = 'root';
 			hook.description = getAbsoluteHooksDir();
+			hook.tooltip = 'Hooks Directory \n' + getAbsoluteHooksDir();
 
 			if (this.activeHookCount > 0) {
 				hook.iconPath = new vscode.ThemeIcon('testing-passed-icon', new vscode.ThemeColor('#RRGGBBAA'));

@@ -4,6 +4,10 @@ All notable changes to the "git-hooks" extension will be documented in this file
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+### [1.3.2] -- 2023-08-04
+- `visibility` of SCM and ActivityBar is now expanded by default
+- Added context to Activity bar and title to SCM View
+
 ### [1.3.1] -- 2023-08-03
 - Added support for relative path for `GitHooks.hooksDirectory` configuration
 - security fix for `GitHooks.hooksDirectory` configuration to prevent shell injection
