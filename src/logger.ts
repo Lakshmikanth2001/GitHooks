@@ -1,4 +1,5 @@
-import {OutputChannel} from 'vscode';
+import {OutputChannel, window} from 'vscode';
+
 
 export const logger = new (class Logger{
     private level: string|undefined;
@@ -7,6 +8,16 @@ export const logger = new (class Logger{
     get timestamp(): string {
 		return `[${new Date().toISOString().replace(/T/, ' ').slice(0, -1)}]`;
 	}
+
+    changeLevel(level: string){
+        // check vaiid level
+        if(level !== 'debug' && level !== 'info' && level !== 'warn' && level !== 'error'){
+            window.showErrorMessage(`GitHooks: Invalid log level ${level}`);
+            return;
+        }
+        window.showInformationMessage(`GitHooks: Log level changed to ${level}`);
+        this.level = level;
+    }
 
     configure(level: string, outputChannel: OutputChannel){
         this.level = level;

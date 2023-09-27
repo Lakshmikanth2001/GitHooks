@@ -68,19 +68,25 @@ function configurationChangeHandler(configChange: vscode.ConfigurationChangeEven
 		vscode.commands.executeCommand('setContext', 'GitHooks.hooksDirectoryList', [hooksDir]);
 
 		// update hooks directory
-		if (!intialHooksDirectorySet) {
-			// refresh the Hooks Tree provider after setting the hooks directory
+		if (intialHooksDirectorySet) {
+			return;
+		}
 
-			setHooksDir(hooksDir).then(() => {
+		setHooksDir(hooksDir)
+			.then(() => {
 				registerHookTreeDataProvider();
 				vscode.window.showInformationMessage(
 					`GitHooks directory is now set to ${hooksDir}`,
 				);
-			}).catch((err) => {
+			})
+			.catch((err) => {
 				logger.error(`Unable to set core.hooksPath git configuration to ${hooksDir}`);
 				logger.error(`${err}`);
 			});
-		}
+	}
+	if(configChange.affectsConfiguration('GitHooks.logLevel')){
+		let changedLevel = vscode.workspace.getConfiguration('GitHooks')?.['logLevel'] ?? 'debug';
+		logger.changeLevel(changedLevel);
 	}
 }
 
@@ -166,6 +172,37 @@ async function setHooksDir(hooksDirectory : string): Promise<String>{
 	return await executeShellCommandSync(`cd ${workingDir.uri.fsPath} && git config core.hooksPath ${hooksDirectory} &2>/dev/null`);
 }
 
+/**
+ * Prompts the user to select a directory and returns the path of the selected directory.
+ * @returns A Promise that resolves to the path of the selected directory.
+ * @throws If no directory is selected.
+ */
+function selectHooksDir(): Promise<void> {
+	return new Promise(async (resolve, reject) => {
+		vscode.window.showOpenDialog({
+			canSelectFiles: false,
+			canSelectFolders: true,
+			canSelectMany: false,
+			openLabel: 'Select GitHooks Directory',
+		}).then((uri) => {
+			if (!uri) {
+				// user can cancel the dialog without selecting any directory
+				return resolve();
+			}
+			setHooksDir(uri[0].fsPath).then(() => {
+				vscode.window.showInformationMessage(`GitHooks directory is now set to ${uri[0].fsPath}`);
+				resolve();
+			}).catch((err) => {
+				logger.error(`Unable to set core.hooksPath git configuration to ${uri[0].fsPath}`);
+				logger.error(`${err}`);
+				reject(err);
+			});
+		}).then(undefined, (err) => {
+            reject(err);
+        });
+	});
+}
+
 
 /**
  * Creates a custom completion item for a snippet.
@@ -210,7 +247,7 @@ export async function activate(context: vscode.ExtensionContext) {
 	// Use the console to output diagnostic information (console.log) and errors (console.error)
 	// This line of code will only be executed once when your extension is activate
 
-	const logLevel = vscode.workspace.getConfiguration('GitHooks')?.['logLevel'] ?? 'info';
+	const logLevel = vscode.workspace.getConfiguration('GitHooks')?.['logLevel'] ?? 'debug';
 	logger.configure(logLevel, vscode.window.createOutputChannel("GitHooks"));
 	logger.info("GitHooks extension is now active!");
 
@@ -258,6 +295,7 @@ export async function activate(context: vscode.ExtensionContext) {
 			let languageSnippetProvider = vscode.languages.registerCompletionItemProvider(
 				{
 					scheme: 'file',
+					pattern: `**/.git/hooks/**`,
 				},
 				{
 					provideCompletionItems(document: vscode.TextDocument, position: vscode.Position) {
@@ -366,6 +404,7 @@ export async function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(vscode.commands.registerCommand('git-hooks.reloadHooks', reloadHooks));
 	context.subscriptions.push(vscode.commands.registerCommand('git-hooks.hookDescription', hookDescription));
 	context.subscriptions.push(vscode.commands.registerCommand('git-hooks.toggleView', toggleView));
+	context.subscriptions.push(vscode.commands.registerCommand('git-hooks.configureHooksDirectory', selectHooksDir));
 	context.subscriptions.push(datetimeSnippetProvider);
 }
 

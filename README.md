@@ -12,7 +12,8 @@ The GitHooks extension for Visual Studio Code provides a user interface (UI) to 
 * Configures git hooks path (i.e., `git config core.hooksPath`) in the current workspace
 
 ## Run Git Hooks
-![](https://githooks.s3.ap-south-1.amazonaws.com/run_hook.png)
+get image from asset folder
+![](/assets/hookRun.png)
 
 ## Git Hooks Configuration
 - GitHooks.hooksDirectory
@@ -26,17 +27,17 @@ The GitHooks extension for Visual Studio Code provides a user interface (UI) to 
     Their path is computed via a bash command `which python`
 
 ## Various Shell path suggetions
-![](https://githooks.s3.ap-south-1.amazonaws.com/shell-suggetion.png)
+![](/assets/shell-suggetion.png)
 
 ## Git Hooks in VS Code Source Control
 * Toggle Git Hooks view between activity bar and SCM view using git icon on the top right
-![](https://githooks.s3.ap-south-1.amazonaws.com/2022-04-30.png)
+![](/assets/hookSCMView.png)
 
 ## Git Hooks Layout
-![](https://githooks.s3.ap-south-1.amazonaws.com/hook_options.png)
+![](/assets/hookLayout.png)
 
 ## Git Hooks Description
-![](https://githooks.s3.ap-south-1.amazonaws.com/hook_hints.png)
+![](/assets/hookDescription.png)
 
 # Contributors
 

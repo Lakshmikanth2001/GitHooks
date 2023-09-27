@@ -4,6 +4,12 @@ All notable changes to the "git-hooks" extension will be documented in this file
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [1.3.4] -- 2023-09-27
+- looger improvement (detecting `GitHooks.logLevel` configuration)
+- folder selection for `GitHooks.hooksDirectory` configuration
+- adding git local assets to REAME.md
+- restrict text snippet scope to hooks only
+
 ### [1.3.3] -- 2023-08-09
 - Added `GitHooks.logLevel` configuration to set the log level of the extension.
 - Render `shebang` snippet only on the first line of the file.
