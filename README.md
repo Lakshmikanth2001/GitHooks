@@ -12,7 +12,6 @@ The GitHooks extension for Visual Studio Code provides a user interface (UI) to 
 * Configures git hooks path (i.e., `git config core.hooksPath`) in the current workspace
 
 ## Run Git Hooks
-get image from asset folder
 ![](/assets/hookRun.png)
 
 ## Git Hooks Configuration
