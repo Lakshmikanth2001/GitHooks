@@ -265,13 +265,7 @@
 					"description": "configuration to set log level in `GitHooks` output channel (used for extension debugging)"
 				}
 			}
-		},
-		"snippets": [
-			{
-				"language": "python",
-				"path": "./src/snippets/python.json"
-			}
-		]
+		}
 	},
 	"scripts": {
 		"analizeBundle": "webpack --profile --json > stats.json",
