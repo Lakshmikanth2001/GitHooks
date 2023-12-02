@@ -4,7 +4,7 @@ import * as os from 'os';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as vscode from 'vscode';
-import { registerHookTreeDataProvider } from './hooks_data';
+import { registerHookTreeDataProvider, registerMultiHookTreeDataProvider } from './hooks_data';
 import { annotateFirstLine, clearLineAnnotation, initialAnnotation } from './text_decorators';
 import { openHook, runHook, toggleHook, reloadHooks, hookDescription, runCurrentHook } from './hook_actions';
 import { shellComand } from './launguages';
@@ -21,6 +21,31 @@ function validatePath(path: string): boolean {
 	}
 
 	return true;
+}
+
+function annotateFirstLineOfActiveEditor(context: vscode.ExtensionContext, hooksDir: string) {
+	vscode.window.onDidChangeActiveTextEditor((editor) => {
+		if (!editor) {
+			return;
+		}
+
+		const fileLocation = editor.document.uri.fsPath;
+
+		vscode.window.onDidChangeTextEditorSelection(
+			() => {
+				clearLineAnnotation(editor);
+			},
+			null,
+			context.subscriptions,
+		);
+
+		// if file is not in hooks directory then return
+
+		if(fileLocation && !fileLocation.startsWith(hooksDir)){
+			vscode.window.onDidChangeTextEditorSelection(annotateFirstLine, null, context.subscriptions);
+			return ;
+		}
+	});
 }
 
 /**
@@ -402,40 +427,29 @@ export async function activate(context: vscode.ExtensionContext) {
 				if (workspaceHookPathsArray[i] === '') {
 					workspaceHookPathsArray[i] = path.join(currentWorkspaceFolders[i].uri.fsPath, '.git', 'hooks');
 				}
+
+				// remove \n from the end of the string
+				workspaceHookPathsArray[i] = workspaceHookPathsArray[i].replace(/\n$/, '');
 			}
 			logger.debug(`hooksPathArray ${workspaceHookPathsArray}`);
 
 			vscode.commands.executeCommand('setContext', 'GitHooks.hooksDirectoryList', [workspaceHookPathsArray]);
 
+			registerMultiHookTreeDataProvider(workspaceHookPathsArray);
+
+		}).catch((err) => {
+			logger.error(`Unable to read or locate hooksDirectory failed with following error : \n ${err}`);
 		});
+
 	}
 	else{
 		// get local hooks path
 		getHooksDir()
 			.then((hooksDir) => {
 
-		vscode.window.onDidChangeActiveTextEditor((editor) => {
-			if (!editor) {
-				return;
-			}
 
-			const fileLocation = editor.document.uri.fsPath;
+				annotateFirstLineOfActiveEditor(context, hooksDir);
 
-			vscode.window.onDidChangeTextEditorSelection(
-				() => {
-					clearLineAnnotation(editor);
-				},
-				null,
-				context.subscriptions,
-			);
-
-			// if file is not in hooks directory then return
-
-			if(fileLocation && !fileLocation.startsWith(hooksDir)){
-				vscode.window.onDidChangeTextEditorSelection(annotateFirstLine, null, context.subscriptions);
-				return ;
-			}
-		});
 				const currentConfiguration = vscode.workspace.getConfiguration('GitHooks', workspaceFolder);
 
 				let currentHooksDir = currentConfiguration?.['hooksDirectory'] ?? '';

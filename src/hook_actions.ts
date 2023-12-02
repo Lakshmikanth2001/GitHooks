@@ -23,17 +23,32 @@ async function checkGitVersion(): Promise<boolean> {
 }
 
 async function openHook(hook: Hook) {
-	const gitHookDir = getAbsoluteHooksDir();
-	vscode.workspace.openTextDocument(path.join(gitHookDir, hook.label)).then((doc) => {
-		vscode.window.showTextDocument(doc).then((editor) => {
-			// create a vscode snippet
-			// set a vscode decorator
-			let hookLaunguage = editor.document.getText(
-				new vscode.Range(new vscode.Position(0, 0), new vscode.Position(1, 0)),
-			);
-			vscode.window.showInformationMessage(`Hook ${hook.label} is now open in ${hookLaunguage}`);
+	// for multiple workspace support
+	if(hook.directoryPath){
+		vscode.workspace.openTextDocument(path.join(hook.directoryPath, hook.label)).then(doc => {
+			vscode.window.showTextDocument(doc).then((editor) => {
+				// create a vscode snippet
+				// set a vscode decorator
+				let hookLaunguage = editor.document.getText(
+					new vscode.Range(new vscode.Position(0, 0), new vscode.Position(1, 0)),
+				);
+				vscode.window.showInformationMessage(`Hook ${hook.label} is now open in ${hookLaunguage}`);
+			});
 		});
-	});
+	}
+	else{
+		const gitHookDir = getAbsoluteHooksDir();
+		vscode.workspace.openTextDocument(path.join(gitHookDir, hook.label)).then((doc) => {
+			vscode.window.showTextDocument(doc).then((editor) => {
+				// create a vscode snippet
+				// set a vscode decorator
+				let hookLaunguage = editor.document.getText(
+					new vscode.Range(new vscode.Position(0, 0), new vscode.Position(1, 0)),
+				);
+				vscode.window.showInformationMessage(`Hook ${hook.label} is now open in ${hookLaunguage}`);
+			});
+		});
+	}
 }
 
 function conventionalHookRun(hook: Hook) {
@@ -95,6 +110,9 @@ async function runHook(hook: Hook) {
 
 	// git hook run command exist
 	let terminal: vscode.Terminal = vscode.window.createTerminal(hook.label + ' hook');
+	if(hook.directoryPath){
+		terminal.sendText(`cd ${hook.directoryPath}`);
+	}
 	terminal.sendText(`git hook run ${hook.label}`);
 	vscode.window.terminals.forEach((terminal) => {
 		if (terminal.name === hook.label + ' hook') {
@@ -112,13 +130,14 @@ async function runCurrentHook(){
 	let currentHookFilePath = currentActiveFile.fileName;
 	let currentHookFileName = path.basename(currentHookFilePath);
 
+	let currentHook: Hook;
 	if (currentHookFileName.indexOf('.sample') !== -1) {
-		let currentHook = new Hook(currentHookFileName, 'Inactive', vscode.TreeItemCollapsibleState.None);
-		runHook(currentHook);
+		currentHook = new Hook(currentHookFileName, 'Inactive', vscode.TreeItemCollapsibleState.None);
 	} else {
-		let currentHook = new Hook(currentHookFileName, 'Active', vscode.TreeItemCollapsibleState.None);
-		runHook(currentHook);
+		currentHook = new Hook(currentHookFileName, 'Active', vscode.TreeItemCollapsibleState.None);
 	}
+	currentHook.directoryPath = path.dirname(currentHookFilePath);
+	runHook(currentHook);
 }
 
 function toggleHook(hook: Hook) {
