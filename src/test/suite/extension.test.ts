@@ -16,4 +16,17 @@ suite('Extension Test Suite', () => {
 		assert.ok(vscode.extensions.getExtension('lakshmikanthayyadevara.githooks'));
 	});
 
+	// start the extension
+	test('Extension should be activated', async () => {
+		const extension = vscode.extensions.getExtension('lakshmikanthayyadevara.githooks');
+		// active the extension
+		await extension?.activate();
+		assert.ok(extension?.isActive);
+	});
+
+	// change the extension view for scm to activity bar
+	test('Extension view should be changed', async () => {
+		// open a workspace
+	});
+
 });

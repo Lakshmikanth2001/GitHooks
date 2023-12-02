@@ -111,7 +111,12 @@ async function executeShellCommandSync(command: string): Promise<string>{
 			vscode.window.showErrorMessage('Unknown OS cannot detect bash shell');
 			return Promise.reject('Unknown OS cannot detect bash shell');
 	}
-	return await shellComand(command, { shell });
+	try {
+		return await shellComand(command, { shell });
+	} catch (error) {
+		logger.error(`Failed to execute shell command: ${command}. Error: ${error}`);
+		throw error;
+	}
 }
 
 /**
@@ -329,25 +334,6 @@ export async function activate(context: vscode.ExtensionContext) {
 		});
 	});
 
-	vscode.window.onDidChangeActiveTextEditor((editor) => {
-		if (!editor) {
-			return;
-		}
-
-		const fileLocation = editor.document.uri.fsPath;
-		if (!fileLocation || fileLocation.indexOf('hooks') === -1) {
-			vscode.window.onDidChangeTextEditorSelection(
-				() => {
-					clearLineAnnotation(editor);
-				},
-				null,
-				context.subscriptions,
-			);
-			return;
-		}
-		vscode.window.onDidChangeTextEditorSelection(annotateFirstLine, null, context.subscriptions);
-	});
-
 	vscode.workspace.onDidChangeConfiguration((configChange) => {
 		configurationChangeHandler(configChange, workspaceFolder, intialHooksDirectorySet);
 	});
@@ -358,6 +344,29 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	// get local hooks path
 	getHooksDir().then((hooksDir) => {
+
+		vscode.window.onDidChangeActiveTextEditor((editor) => {
+			if (!editor) {
+				return;
+			}
+
+			const fileLocation = editor.document.uri.fsPath;
+
+			vscode.window.onDidChangeTextEditorSelection(
+				() => {
+					clearLineAnnotation(editor);
+				},
+				null,
+				context.subscriptions,
+			);
+
+			// if file is not in hooks directory then return
+
+			if(fileLocation && !fileLocation.startsWith(hooksDir)){
+				vscode.window.onDidChangeTextEditorSelection(annotateFirstLine, null, context.subscriptions);
+				return ;
+			}
+		});
 
 		const currentConfiguration = vscode.workspace
 		.getConfiguration('GitHooks', workspaceFolder);
