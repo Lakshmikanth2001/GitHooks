@@ -9,7 +9,6 @@ import { annotateFirstLine, clearLineAnnotation, initialAnnotation } from './tex
 import { openHook, runHook, toggleHook, reloadHooks, hookDescription, runCurrentHook } from './hook_actions';
 import { shellComand } from './launguages';
 import { logger } from './logger';
-import { assert } from 'console';
 
 function validatePath(path: string): boolean {
 	// Regular expression to match characters typically used in shell commands
@@ -342,29 +341,6 @@ export async function activate(context: vscode.ExtensionContext) {
 		languages.map((launguage) => executeShellCommandSync(`which ${launguage}`)),
 	);
 
-	const datetimeSnippetProvider = vscode.languages.registerCompletionItemProvider(
-		{
-			scheme: 'file',
-			language: 'typescript',
-		},
-		{
-			provideCompletionItems(document: vscode.TextDocument, position: vscode.Position) {
-				const completionItem = new vscode.CompletionItem('datetime ⌚', vscode.CompletionItemKind.Text);
-
-				// provide details about the inserted snippet
-				completionItem.insertText = new Date(Date.now() - new Date().getTimezoneOffset() * 60000)
-					.toISOString()
-					.split('.')[0];
-				completionItem.detail = 'dateTime by GitHook';
-				completionItem.documentation = new vscode.MarkdownString(
-					'This is a typescript snippet for getting current date',
-				);
-				return [completionItem];
-			},
-		},
-		'dateTime',
-	);
-
 	codePathsPromise.then((codePromiseResults) => {
 		codePromiseResults.forEach((promiseResult, index) => {
 			if (promiseResult.status !== 'fulfilled') {
@@ -430,6 +406,8 @@ export async function activate(context: vscode.ExtensionContext) {
 
 				// remove \n from the end of the string
 				workspaceHookPathsArray[i] = workspaceHookPathsArray[i].replace(/\n$/, '');
+
+				annotateFirstLineOfActiveEditor(context, workspaceHookPathsArray[i]);
 			}
 			logger.debug(`hooksPathArray ${workspaceHookPathsArray}`);
 
@@ -500,7 +478,7 @@ export async function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(vscode.commands.registerCommand('git-hooks.hookDescription', hookDescription));
 	context.subscriptions.push(vscode.commands.registerCommand('git-hooks.toggleView', toggleView));
 	context.subscriptions.push(vscode.commands.registerCommand('git-hooks.configureHooksDirectory', selectHooksDir));
-	context.subscriptions.push(datetimeSnippetProvider);
+	// context.subscriptions.push(datetimeSnippetProvider);
 }
 
 // this method is called when your extension is deactivated

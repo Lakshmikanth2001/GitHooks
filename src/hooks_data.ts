@@ -12,30 +12,40 @@ let gitHooksProviderCache: GitHooksProvider | null = null;
 export class Hook extends vscode.TreeItem {
 	constructor(
 		public readonly label: string,
-		private status: string,
+		status: string,
 		public readonly collapsibleState: vscode.TreeItemCollapsibleState,
+		directoryPath: string,
 	) {
 		super(label, collapsibleState);
 		this.tooltip = label + '\n' + status;
+		this.directoryPath = directoryPath;
+		this.path = path.join(directoryPath, label);
 	}
 
 	//vscode Theme color green
 	iconPath: vscode.ThemeIcon = new vscode.ThemeIcon('circle-large-outline');
-	directoryPath?: string | undefined;
+	directoryPath: string;
+	path: string;
 	contextValue?: string | undefined = 'hook';
 }
 
-export function getAbsoluteHooksDir(): string {
-	const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+function getMultiHookDirectories(): string[] {
+	const hookDirectories =  vscode.workspace.workspaceFolders?.map((workspaceFolder) => {
+		let currentHooksDir = vscode.workspace.getConfiguration('GitHooks', workspaceFolder)?.['hooksDirectory'];
 
-	let currentHooksDir = vscode.workspace.getConfiguration('GitHooks', workspaceFolder)?.['hooksDirectory'];
+		currentHooksDir = currentHooksDir.replace(/^~/, os.homedir());
 
-	currentHooksDir = currentHooksDir.replace(/^~/, os.homedir());
+		if (!path.isAbsolute(currentHooksDir)) {
+			currentHooksDir = path.resolve(workspaceFolder?.uri.fsPath ?? '', currentHooksDir);
+		}
+		return currentHooksDir;
+	})??[];
 
-	if (!path.isAbsolute(currentHooksDir)) {
-		currentHooksDir = path.resolve(workspaceFolder?.uri.fsPath ?? '', currentHooksDir);
+	if(hookDirectories.length === 0){
+		logger.error("No valid git hook directories found");
+		return [];
 	}
-	return currentHooksDir;
+	return hookDirectories;
 }
 
 export function validViewBadgeVersion(): boolean {
@@ -52,23 +62,20 @@ export function validViewBadgeVersion(): boolean {
 	return true;
 }
 
-function getHook(gitHooksDirectoryFiles: string[], predefinedHooksMap: Map<String, boolean>, hookDirectory: string = ".git/hooks" ): Hook[] {
+function getHook(gitHooksDirectoryFiles: string[], predefinedHooksMap: Map<String, boolean>, hookDirectory: string): Hook[] {
 
-	return gitHooksDirectoryFiles.map((hook) => {
-		if (!predefinedHooksMap.get(hook.replace('.sample', ''))) {
-			const hookData = new Hook(hook, 'Not a predefined hook', vscode.TreeItemCollapsibleState.None);
+	return gitHooksDirectoryFiles.map((hookName) => {
+		if (!predefinedHooksMap.get(hookName.replace('.sample', ''))) {
+			const hookData = new Hook(hookName, 'Not a predefined hook', vscode.TreeItemCollapsibleState.None, hookDirectory);
 			hookData.iconPath = new vscode.ThemeIcon('testing-error-icon');
 			hookData.contextValue = 'notPredefined';
 			return hookData;
 		}
 
 
-		const isActive = hook.indexOf('.sample') === -1;
+		const isActive = hookName.indexOf('.sample') === -1;
 		const hookStatus = isActive ? 'Active' : 'Inactive';
-		const hookData = new Hook(hook, hookStatus, vscode.TreeItemCollapsibleState.None);
-		if(hookDirectory !== ".git/hooks"){
-			hookData.directoryPath = hookDirectory;
-		}
+		const hookData = new Hook(hookName, hookStatus, vscode.TreeItemCollapsibleState.None, hookDirectory);
 		if (isActive) {
 			hookData.iconPath = new vscode.ThemeIcon('testing-passed-icon', new vscode.ThemeColor('#RRGGBBAA'));
 		} else {
@@ -85,6 +92,10 @@ export function registerMultiHookTreeDataProvider(hookDirectories: string[]) {
 		return;
 	}
 
+	// for reload action
+	if(hookDirectories.length === 0){
+		hookDirectories = getMultiHookDirectories();
+	}
 
 	const coreHooksProvider = new MultiGitHooksProvider(hookDirectories);
 	const coreHookTreeView = vscode.window.createTreeView('git_hooks_view', {
@@ -134,7 +145,7 @@ export function registerHookTreeDataProvider(reloadFlag: boolean = false) {
 			treeDataProvider: scmHookProvider,
 		});
 		gitHooksSCMView.title = `GitHooks (${scmHookProvider.activeHookCount})`;
-		gitHooksSCMView.description = getAbsoluteHooksDir();
+		gitHooksSCMView.description = getMultiHookDirectories()[0];
 		// clear the badge for scm
 		// scmHookProvider.badge = { value: 0, tooltip: '' };
 		gitHookScmTreeViewRendered = true;
@@ -186,7 +197,7 @@ export class GitHooksProvider implements vscode.TreeDataProvider<Hook> {
 	constructor(private workspaceRoot: string, private isFromScm: boolean) {
 		vscode.workspace.onDidChangeWorkspaceFolders((e) => this.onActivateWorkspaceChanged(e));
 		this.onActivateWorkspaceChanged(undefined);
-		this.gitHooksDir = getAbsoluteHooksDir();
+		this.gitHooksDir = getMultiHookDirectories()[0];
 
 		const predefinedHooks: string[] = vscode.workspace.getConfiguration('GitHooks')?.['predefinedHooks'] ?? [];
 
@@ -240,10 +251,11 @@ export class GitHooksProvider implements vscode.TreeDataProvider<Hook> {
 		}
 
 		// for the root element with label githooks on the top
-		let hook = new Hook('Hooks', '', vscode.TreeItemCollapsibleState.Expanded);
+		let hook = new Hook('Hooks', '', vscode.TreeItemCollapsibleState.Expanded, "");
 		hook.contextValue = 'root';
-		hook.description = getAbsoluteHooksDir();
-		hook.tooltip = 'Hooks Directory \n' + getAbsoluteHooksDir();
+		const currentHookDirectories = getMultiHookDirectories();
+		hook.description = currentHookDirectories[0];
+		hook.tooltip = 'Hooks Directory \n' + currentHookDirectories[0];
 
 		if (this.activeHookCount > 0) {
 			hook.iconPath = new vscode.ThemeIcon('testing-passed-icon', new vscode.ThemeColor('#RRGGBBAA'));
@@ -262,7 +274,7 @@ export class GitHooksProvider implements vscode.TreeDataProvider<Hook> {
 			return [];
 		}
 
-		return getHook(this.gitHooksDirectoryFiles, this.predefinedHooksMap);
+		return getHook(this.gitHooksDirectoryFiles, this.predefinedHooksMap, this.gitHooksDir);
 	}
 	private workSpaceHasGit(workingDir: string | undefined): Boolean {
 		if (!workingDir) {
@@ -283,6 +295,15 @@ export class MultiGitHooksProvider implements vscode.TreeDataProvider<Hook> {
 	private hookDirectoryMap: Map<string, string[]> = new Map<string, string[]>();
 	constructor(private hookDirectories: string[]) {
 		this.hookDirectories = hookDirectories;
+
+		this.hookDirectories = this.hookDirectories.filter(hookDir => fs.existsSync(hookDir));
+
+		if(this.hookDirectories.length === 0){
+			vscode.commands.executeCommand('setContext', 'workSpaceHasGit', false);
+			throw new Error("No valid git hook directories found");
+		}
+
+		vscode.commands.executeCommand('setContext', 'workSpaceHasGit', true);
 
 		const predefinedHooks: string[] = vscode.workspace.getConfiguration('GitHooks')?.['predefinedHooks'] ?? [];
 
@@ -333,7 +354,7 @@ export class MultiGitHooksProvider implements vscode.TreeDataProvider<Hook> {
 			let rootDir = currentWorkspaceFolders?.[index]?.uri.fsPath??'';
 			let dirName = rootDir.split(path.sep)?.pop()??'DIR_NOT_FOUND';
 
-			let hook = new Hook(dirName, '', vscode.TreeItemCollapsibleState.Expanded);
+			let hook = new Hook(dirName, '', vscode.TreeItemCollapsibleState.Expanded, '');
 			hook.contextValue = 'root';
 
 			// extract the directory name from the path

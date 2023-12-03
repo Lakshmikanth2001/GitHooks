@@ -1,4 +1,4 @@
-import { Hook,  registerHookTreeDataProvider, getAbsoluteHooksDir} from './hooks_data';
+import { Hook,  registerHookTreeDataProvider, registerMultiHookTreeDataProvider} from './hooks_data';
 import { shellComand } from './launguages';
 import * as fs from 'fs';
 import * as vscode from 'vscode';
@@ -24,47 +24,32 @@ async function checkGitVersion(): Promise<boolean> {
 
 async function openHook(hook: Hook) {
 	// for multiple workspace support
-	if(hook.directoryPath){
-		vscode.workspace.openTextDocument(path.join(hook.directoryPath, hook.label)).then(doc => {
-			vscode.window.showTextDocument(doc).then((editor) => {
-				// create a vscode snippet
-				// set a vscode decorator
-				let hookLaunguage = editor.document.getText(
-					new vscode.Range(new vscode.Position(0, 0), new vscode.Position(1, 0)),
-				);
-				vscode.window.showInformationMessage(`Hook ${hook.label} is now open in ${hookLaunguage}`);
-			});
+	vscode.workspace.openTextDocument(hook.path).then(doc => {
+		vscode.window.showTextDocument(doc).then((editor) => {
+			// create a vscode snippet
+			// set a vscode decorator
+			let hookLaunguage = editor.document.getText(
+				new vscode.Range(new vscode.Position(0, 0), new vscode.Position(1, 0)),
+			);
+			vscode.window.showInformationMessage(`Hook ${hook.label} is now open in ${hookLaunguage}`);
 		});
-	}
-	else{
-		const gitHookDir = getAbsoluteHooksDir();
-		vscode.workspace.openTextDocument(path.join(gitHookDir, hook.label)).then((doc) => {
-			vscode.window.showTextDocument(doc).then((editor) => {
-				// create a vscode snippet
-				// set a vscode decorator
-				let hookLaunguage = editor.document.getText(
-					new vscode.Range(new vscode.Position(0, 0), new vscode.Position(1, 0)),
-				);
-				vscode.window.showInformationMessage(`Hook ${hook.label} is now open in ${hookLaunguage}`);
-			});
-		});
-	}
+	});
 }
 
 function conventionalHookRun(hook: Hook) {
 	let terminal: vscode.Terminal;
 
-	// get vscode context
-	let hooksPath = getAbsoluteHooksDir();
+	let hooksDir = hook.directoryPath;
+
 	let workspaceFolder = vscode.workspace.workspaceFolders?.[0].uri.fsPath;
-	let currentTestHookPath = path.join(hooksPath, `test_${hook.label}`);
+	let currentTestHookPath = path.join(hooksDir, `test_${hook.label}`);
 
 	switch (process.platform) {
 		case 'win32':
 			terminal = vscode.window.createTerminal(hook.label + ' hook', 'C:\\Program Files\\Git\\bin\\bash.exe');
 
 			// convert windows path to posix path
-			hooksPath = hooksPath.split(path.sep).join(path.posix.sep);
+			hooksDir = hooksDir.split(path.sep).join(path.posix.sep);
 			workspaceFolder = workspaceFolder?.split(path.sep).join(path.posix.sep);
 			currentTestHookPath = currentTestHookPath.split(path.sep).join(path.posix.sep);
 			break;
@@ -82,7 +67,7 @@ function conventionalHookRun(hook: Hook) {
 	vscode.window.showInformationMessage('Running ' + hook.label);
 
 	//access workspace root directory
-	terminal.sendText(`cd ${hooksPath}`); // cd to hooks dir
+	terminal.sendText(`cd ${hooksDir}`); // cd to hooks dir
 	terminal.sendText(`cat ${hook.label} > test_${hook.label}`);
 	terminal.sendText(`chmod +x test_${hook.label}`);
 	terminal.sendText(`cd ${workspaceFolder}`);
@@ -130,11 +115,11 @@ async function runCurrentHook(){
 	let currentHookFilePath = currentActiveFile.fileName;
 	let currentHookFileName = path.basename(currentHookFilePath);
 
-	let currentHook: Hook;
+	let currentHook: Hook; // dummy hook object with empty hook path and directory path
 	if (currentHookFileName.indexOf('.sample') !== -1) {
-		currentHook = new Hook(currentHookFileName, 'Inactive', vscode.TreeItemCollapsibleState.None);
+		currentHook = new Hook(currentHookFileName, 'Inactive', vscode.TreeItemCollapsibleState.None, "");
 	} else {
-		currentHook = new Hook(currentHookFileName, 'Active', vscode.TreeItemCollapsibleState.None);
+		currentHook = new Hook(currentHookFileName, 'Active', vscode.TreeItemCollapsibleState.None, "");
 	}
 	currentHook.directoryPath = path.dirname(currentHookFilePath);
 	runHook(currentHook);
@@ -142,7 +127,7 @@ async function runCurrentHook(){
 
 function toggleHook(hook: Hook) {
 	// get hooksDir from vscode context
-	const hooksDir = getAbsoluteHooksDir();
+	const hooksDir = hook.directoryPath;
 
 	let oldPath = '';
 	let newPath = '';
@@ -162,7 +147,7 @@ function toggleHook(hook: Hook) {
 		// rebuild the TreeDataProvider
 
 		// vscode.workspace.getConfiguration('GitHooks')?.update('GitHooks.hooksDirectory', hooksDir, vscode.ConfigurationTarget.Workspace);
-		registerHookTreeDataProvider(true);
+		reloadHooks();
 		// vscode.window.registerTreeDataProvider('git_hooks_view', new GitHooksProvider(workingDir.uri.fsPath, false));
 		// vscode.window.registerTreeDataProvider('git_hooks_scm', new GitHooksProvider(workingDir.uri.fsPath, true));
 	});
@@ -190,11 +175,17 @@ function hookDescription(hook: Hook) {
 }
 
 function reloadHooks() {
-	const workingDir = vscode.workspace.workspaceFolders?.[0] ?? '';
-	if (workingDir) {
+
+	const workSpaceFolders = vscode.workspace.workspaceFolders;
+
+	if(workSpaceFolders?.length === 1){
 		// rebuild the TreeDataProvider
 		registerHookTreeDataProvider(true);
+		return;
 	}
+
+	// multiple workspace support
+	registerMultiHookTreeDataProvider([]);
 }
 
 export { openHook, runHook, toggleHook, reloadHooks, hookDescription, runCurrentHook };
