@@ -97,7 +97,19 @@ export function registerMultiHookTreeDataProvider(hookDirectories: string[]) {
 		hookDirectories = getMultiHookDirectories();
 	}
 
-	const coreHooksProvider = new MultiGitHooksProvider(hookDirectories);
+	const viewContainerDisplay = vscode.workspace.getConfiguration('GitHooks')?.['viewContainerDisplay'] ?? true;
+
+	let coreHooksProvider: MultiGitHooksProvider = new MultiGitHooksProvider(hookDirectories);
+	if(!viewContainerDisplay){
+		const scmHookTreeView =  vscode.window.createTreeView('git_hooks_scm', {
+			treeDataProvider: coreHooksProvider,
+		});
+
+		scmHookTreeView.title  = `GitHooks (${coreHooksProvider.totalActiveHookCount})`;
+		scmHookTreeView.description = hookDirectories.join(', ');
+
+		scmHookTreeView.badge = undefined;
+	}
 	const coreHookTreeView = vscode.window.createTreeView('git_hooks_view', {
 		treeDataProvider: coreHooksProvider,
 	});
@@ -113,6 +125,12 @@ export function registerMultiHookTreeDataProvider(hookDirectories: string[]) {
 }
 
 export function registerHookTreeDataProvider(reloadFlag: boolean = false) {
+	const workSpaceFolder = vscode.workspace.workspaceFolders;
+
+	if(workSpaceFolder?.length??0 > 0){
+		return registerMultiHookTreeDataProvider([]);
+	}
+
 	const workingDir = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
 	if (!workingDir) {
 		vscode.window.showInformationMessage('Empty workspace can not have git hooks');
@@ -139,6 +157,7 @@ export function registerHookTreeDataProvider(reloadFlag: boolean = false) {
 		return;
 	}
 
+	// if scm view
 	if (!viewContainerDisplay) {
 		let scmHookProvider = new GitHooksProvider(workingDir, true);
 		const gitHooksSCMView = vscode.window.createTreeView('git_hooks_scm', {
@@ -355,7 +374,7 @@ export class MultiGitHooksProvider implements vscode.TreeDataProvider<Hook> {
 			let dirName = rootDir.split(path.sep)?.pop()??'DIR_NOT_FOUND';
 
 			let hook = new Hook(dirName, '', vscode.TreeItemCollapsibleState.Expanded, '');
-			hook.contextValue = 'root';
+			hook.contextValue = 'multiRoot';
 
 			// extract the directory name from the path
 

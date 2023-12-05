@@ -411,7 +411,7 @@ export async function activate(context: vscode.ExtensionContext) {
 			}
 			logger.debug(`hooksPathArray ${workspaceHookPathsArray}`);
 
-			vscode.commands.executeCommand('setContext', 'GitHooks.hooksDirectoryList', [workspaceHookPathsArray]);
+			vscode.commands.executeCommand('setContext', 'GitHooks.hooksDirectoryList', workspaceHookPathsArray);
 
 			registerMultiHookTreeDataProvider(workspaceHookPathsArray);
 
