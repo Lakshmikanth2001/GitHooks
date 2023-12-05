@@ -4,7 +4,7 @@ All notable changes to the "git-hooks" extension will be documented in this file
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
-## [2.0.1] -- 2023-12-05
+## [2.0.0] -- 2023-12-05
 - Added support for vscode workspaces
 - Improve performance by caching git hooks directory reads
 - Decreased command execution time to find out git hooks directory
