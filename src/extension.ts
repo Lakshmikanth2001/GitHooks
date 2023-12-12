@@ -9,6 +9,7 @@ import { annotateFirstLine, clearLineAnnotation, initialAnnotation } from './tex
 import { openHook, runHook, toggleHook, reloadHooks, hookDescription, runCurrentHook } from './hook_actions';
 import { shellComand } from './launguages';
 import { logger } from './logger';
+import cacheInstance from './cacheContainer';
 
 function validatePath(path: string): boolean {
 	// Regular expression to match characters typically used in shell commands
@@ -396,6 +397,9 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	if (vscode.workspace.workspaceFolders.length > 1) {
 		logger.debug('multiple workspace folder found');
+
+		cacheInstance.set('multipleWorkspace', true);
+
 		const currentWorkspaceFolders = vscode.workspace.workspaceFolders;
 
 		getMultipleHooksDir().then((workspaceHookPathsArray) => {
@@ -411,6 +415,8 @@ export async function activate(context: vscode.ExtensionContext) {
 			}
 			logger.debug(`hooksPathArray ${workspaceHookPathsArray}`);
 
+			cacheInstance.set('hooksDirectoryList', workspaceHookPathsArray);
+
 			vscode.commands.executeCommand('setContext', 'GitHooks.hooksDirectoryList', workspaceHookPathsArray);
 
 			registerMultiHookTreeDataProvider(workspaceHookPathsArray);
@@ -425,6 +431,7 @@ export async function activate(context: vscode.ExtensionContext) {
 		getHooksDir()
 			.then((hooksDir) => {
 
+				cacheInstance.set('multipleWorkspace', false);
 
 				annotateFirstLineOfActiveEditor(context, hooksDir);
 
@@ -456,6 +463,8 @@ export async function activate(context: vscode.ExtensionContext) {
 				//adding initial context
 				vscode.commands.executeCommand('setContext', 'GitHooks.hooksDirectory', hooksDir);
 				vscode.commands.executeCommand('setContext', 'GitHooks.hooksDirectoryList', [hooksDir]);
+
+				cacheInstance.set('hooksDirectory', hooksDir);
 
 				registerHookTreeDataProvider();
 				intialHooksDirectorySet = false;

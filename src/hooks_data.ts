@@ -4,10 +4,7 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import { ViewBadge } from 'vscode';
 import { logger } from './logger';
-
-let gitHookScmTreeViewRendered = false;
-let gitHookContainerTreeViewRendered = false;
-let gitHooksProviderCache: GitHooksProvider | null = null;
+import cacheInstance from './cacheContainer';
 
 export class Hook extends vscode.TreeItem {
 	constructor(
@@ -127,7 +124,12 @@ export function registerMultiHookTreeDataProvider(hookDirectories: string[]) {
 export function registerHookTreeDataProvider(reloadFlag: boolean = false) {
 	const workSpaceFolder = vscode.workspace.workspaceFolders;
 
-	if(workSpaceFolder?.length??0 > 0){
+	// get scmProvider and coreProvider from cache
+	const scmHookProviderCache = cacheInstance.get<GitHooksProvider>('scmHookProvider');
+	const coreHookProviderCache = cacheInstance.get<GitHooksProvider>('coreHooksProvider');
+
+	// workSpaceFolder?.length??0 > 1 was returning 1 for workspace with single folder so added brackets()
+	if((workSpaceFolder?.length??0) > 1){
 		return registerMultiHookTreeDataProvider([]);
 	}
 
@@ -139,19 +141,15 @@ export function registerHookTreeDataProvider(reloadFlag: boolean = false) {
 
 	const viewContainerDisplay = vscode.workspace.getConfiguration('GitHooks')?.['viewContainerDisplay'] ?? true;
 
-	if (!reloadFlag && gitHookScmTreeViewRendered && gitHookContainerTreeViewRendered) {
-		if (gitHooksProviderCache === null) {
-			return;
-		}
-
+	if (!reloadFlag && scmHookProviderCache && coreHookProviderCache) {
 		if (viewContainerDisplay) {
 			const hookView = vscode.window.createTreeView('git_hooks_view', {
-				treeDataProvider: gitHooksProviderCache,
+				treeDataProvider: coreHookProviderCache,
 			});
-			hookView.badge = { value: gitHooksProviderCache.activeHookCount, tooltip: '' };
+			hookView.badge = { value: coreHookProviderCache.activeHookCount, tooltip: '' };
 		} else {
 			vscode.window.createTreeView('git_hooks_view', {
-				treeDataProvider: gitHooksProviderCache,
+				treeDataProvider: coreHookProviderCache,
 			}).badge = undefined;
 		}
 		return;
@@ -159,6 +157,7 @@ export function registerHookTreeDataProvider(reloadFlag: boolean = false) {
 
 	// if scm view
 	if (!viewContainerDisplay) {
+		// i think scm view should be created only once(or on reload)
 		let scmHookProvider = new GitHooksProvider(workingDir, true);
 		const gitHooksSCMView = vscode.window.createTreeView('git_hooks_scm', {
 			treeDataProvider: scmHookProvider,
@@ -167,11 +166,11 @@ export function registerHookTreeDataProvider(reloadFlag: boolean = false) {
 		gitHooksSCMView.description = getMultiHookDirectories()[0];
 		// clear the badge for scm
 		// scmHookProvider.badge = { value: 0, tooltip: '' };
-		gitHookScmTreeViewRendered = true;
+		cacheInstance.set('scmHookProvider', scmHookProvider);
 
-		if (gitHooksProviderCache) {
+		if (scmHookProviderCache) {
 			vscode.window.createTreeView('git_hooks_view', {
-				treeDataProvider: gitHooksProviderCache,
+				treeDataProvider: scmHookProviderCache,
 			}).badge = undefined;
 		} else {
 			const emptyTreeDataProvider = {
@@ -203,7 +202,7 @@ export function registerHookTreeDataProvider(reloadFlag: boolean = false) {
 		};
 		coreHookTreeView.badge = activeHookCount > 0 ? iconBadge : { value: 0, tooltip: '' };
 	}
-	gitHooksProviderCache = coreHooksProvider;
+	cacheInstance.set('coreHooksProvider', coreHooksProvider);
 }
 
 export class GitHooksProvider implements vscode.TreeDataProvider<Hook> {

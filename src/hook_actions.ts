@@ -4,11 +4,9 @@ import * as fs from 'fs';
 import * as vscode from 'vscode';
 import * as path from 'path';
 import { logger } from './logger';
+import cacheInstance from './cacheContainer';
 
 const POST_HOOKS = ['pre-receive', 'update', 'proc-receive', 'post-receive', 'post-update'];
-
-let isGitHooksRunCompatabile: boolean | null = null;
-
 
 async function checkGitVersion(): Promise<boolean> {
 	let gitVersion: string = await shellComand('git --version');
@@ -17,7 +15,9 @@ async function checkGitVersion(): Promise<boolean> {
 
 	const [majorRelease, subRelease, releaseFix]: string[] = version.split('.');
 
-	isGitHooksRunCompatabile = parseInt(majorRelease) >= 2 && (parseInt(subRelease) > 36 || (subRelease === '36' && releaseFix === '1'));
+	let isGitHooksRunCompatabile = parseInt(majorRelease) >= 2 && (parseInt(subRelease) > 36 || (subRelease === '36' && releaseFix === '1'));
+
+	cacheInstance.set('isGitHooksRunCompatabile', isGitHooksRunCompatabile);
 
 	return isGitHooksRunCompatabile;
 }
@@ -84,7 +84,11 @@ function conventionalHookRun(hook: Hook) {
 }
 
 async function runHook(hook: Hook) {
-	if(isGitHooksRunCompatabile === null){
+
+	let isGitHooksRunCompatabile: boolean | undefined = cacheInstance.get<boolean>('isGitHooksRunCompatabile');
+
+	// check if cache is empty
+	if(isGitHooksRunCompatabile === undefined){
 		isGitHooksRunCompatabile = await checkGitVersion();
 	}
 
@@ -142,6 +146,8 @@ function toggleHook(hook: Hook) {
 
 	fs.rename(oldPath, newPath, (err) => {
 		if (err) {
+			logger.error('Error renaming file hook file');
+			logger.error(err.message);
 			throw err;
 		}
 		// rebuild the TreeDataProvider
