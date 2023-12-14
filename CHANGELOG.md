@@ -4,6 +4,10 @@ All notable changes to the "git-hooks" extension will be documented in this file
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [2.0.1] -- 2023-12-13
+- CacheContainer class added to cache git hooks directory reads
+- Single Hook Directory read correction
+
 ## [2.0.0] -- 2023-12-05
 - Added support for vscode workspaces
 - Improve performance by caching git hooks directory reads
