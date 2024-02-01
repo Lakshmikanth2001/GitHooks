@@ -80,7 +80,7 @@ function conventionalHookRun(hook: Hook) {
 	terminal.sendText(`cd ${hooksDir}`); // cd to hooks dir
 	terminal.sendText(`cat ${hook.label} > test_${hook.label}`);
 	terminal.sendText(`chmod +x test_${hook.label}`);
-	terminal.sendText(`cd ${workspaceFolder}`);
+	terminal.sendText(`${command} ${workspaceFolder}`);
 	terminal.sendText(`sh ${currentTestHookPath}`);
 	terminal.sendText(`rm ${currentTestHookPath}`);
 
