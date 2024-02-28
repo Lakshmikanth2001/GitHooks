@@ -65,13 +65,23 @@ function conventionalHookRun(hook: Hook) {
 	}
 
 	vscode.window.showInformationMessage('Running ' + hook.label);
-
+	let command = 'sh';
+	var data = fs.readFileSync(hook.path, 'utf8');
+	const lines = data.split('\n');
+	for (let line of lines) {
+		if (line.startsWith('#!')) {
+			if (line.startsWith('#!/usr/bin/env')) {
+				command = line.substring(15);
+			}
+			break;
+		}
+	}
 	//access workspace root directory
 	terminal.sendText(`cd ${hooksDir}`); // cd to hooks dir
 	terminal.sendText(`cat ${hook.label} > test_${hook.label}`);
 	terminal.sendText(`chmod +x test_${hook.label}`);
 	terminal.sendText(`cd ${workspaceFolder}`);
-	terminal.sendText(`sh ${currentTestHookPath}`);
+	terminal.sendText(`${command} ${currentTestHookPath}`);
 	terminal.sendText(`rm ${currentTestHookPath}`);
 
 	vscode.window.terminals.forEach((terminal) => {
