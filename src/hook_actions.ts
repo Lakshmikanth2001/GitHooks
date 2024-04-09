@@ -194,14 +194,20 @@ function reloadHooks() {
 
 	const workSpaceFolders = vscode.workspace.workspaceFolders;
 
-	if(workSpaceFolders?.length === 1){
+	const hookPaths = cacheInstance.get<Array<string>>('hooksDirectoryList');
+
+	if(!hookPaths){
+		vscode.window.showErrorMessage("hookPath is not cached and can not be accessed on reload action")
+		return ;
+	}
+
+	if (workSpaceFolders?.length === 1) {
 		// rebuild the TreeDataProvider
-		registerHookTreeDataProvider(true);
+		registerHookTreeDataProvider(true, hookPaths[0]);
 		return;
 	}
 
-	// multiple workspace support
-	registerMultiHookTreeDataProvider([]);
+	registerMultiHookTreeDataProvider(hookPaths);
 }
 
 export { openHook, runHook, toggleHook, reloadHooks, hookDescription, runCurrentHook };

@@ -26,25 +26,6 @@ export class Hook extends vscode.TreeItem {
 	contextValue?: string | undefined = 'hook';
 }
 
-function getMultiHookDirectories(): string[] {
-	const hookDirectories =  vscode.workspace.workspaceFolders?.map((workspaceFolder) => {
-		let currentHooksDir = vscode.workspace.getConfiguration('GitHooks', workspaceFolder)?.['hooksDirectory'];
-
-		currentHooksDir = currentHooksDir.replace(/^~/, os.homedir());
-
-		if (!path.isAbsolute(currentHooksDir)) {
-			currentHooksDir = path.resolve(workspaceFolder?.uri.fsPath ?? '', currentHooksDir);
-		}
-		return currentHooksDir;
-	})??[];
-
-	if(hookDirectories.length === 0){
-		logger.error("No valid git hook directories found");
-		return [];
-	}
-	return hookDirectories;
-}
-
 export function validViewBadgeVersion(): boolean {
 	const initialValidVersion = '1.72.0'; // version where `viewBadge` feature was introduced
 	const baseRelease = initialValidVersion.split('.').map(Number);
@@ -89,11 +70,6 @@ export function registerMultiHookTreeDataProvider(hookDirectories: string[]) {
 		return;
 	}
 
-	// for reload action
-	if(hookDirectories.length === 0){
-		hookDirectories = getMultiHookDirectories();
-	}
-
 	const viewContainerDisplay = vscode.workspace.getConfiguration('GitHooks')?.['viewContainerDisplay'] ?? true;
 
 	let coreHooksProvider: MultiGitHooksProvider = new MultiGitHooksProvider(hookDirectories);
@@ -107,21 +83,23 @@ export function registerMultiHookTreeDataProvider(hookDirectories: string[]) {
 
 		scmHookTreeView.badge = undefined;
 	}
-	const coreHookTreeView = vscode.window.createTreeView('git_hooks_view', {
-		treeDataProvider: coreHooksProvider,
-	});
+	else{
+		const coreHookTreeView = vscode.window.createTreeView('git_hooks_view', {
+			treeDataProvider: coreHooksProvider,
+		});
 
-	if (validViewBadgeVersion()) {
-		const activeHookCount = coreHooksProvider.totalActiveHookCount;
-		const iconBadge: ViewBadge = {
-			value: activeHookCount,
-			tooltip: `${activeHookCount} ActiveHook${activeHookCount === 1 ? '' : 's'}`,
-		};
-		coreHookTreeView.badge = activeHookCount > 0 ? iconBadge : { value: 0, tooltip: '' };
+		if (validViewBadgeVersion()) {
+			const activeHookCount = coreHooksProvider.totalActiveHookCount;
+			const iconBadge: ViewBadge = {
+				value: activeHookCount,
+				tooltip: `${activeHookCount} ActiveHook${activeHookCount === 1 ? '' : 's'}`,
+			};
+			coreHookTreeView.badge = activeHookCount > 0 ? iconBadge : { value: 0, tooltip: '' };
+		}
 	}
 }
 
-export function registerHookTreeDataProvider(reloadFlag: boolean = false) {
+export function registerHookTreeDataProvider(reloadFlag: boolean = false, hookDirectory: string) {
 	const workSpaceFolder = vscode.workspace.workspaceFolders;
 
 	// get scmProvider and coreProvider from cache
@@ -158,12 +136,13 @@ export function registerHookTreeDataProvider(reloadFlag: boolean = false) {
 	// if scm view
 	if (!viewContainerDisplay) {
 		// i think scm view should be created only once(or on reload)
-		let scmHookProvider = new GitHooksProvider(workingDir, true);
+		let scmHookProvider = new GitHooksProvider(workingDir, true, hookDirectory);
 		const gitHooksSCMView = vscode.window.createTreeView('git_hooks_scm', {
 			treeDataProvider: scmHookProvider,
 		});
 		gitHooksSCMView.title = `GitHooks (${scmHookProvider.activeHookCount})`;
-		gitHooksSCMView.description = getMultiHookDirectories()[0];
+
+		gitHooksSCMView.description = hookDirectory;
 		// clear the badge for scm
 		// scmHookProvider.badge = { value: 0, tooltip: '' };
 		cacheInstance.set('scmHookProvider', scmHookProvider);
@@ -189,7 +168,7 @@ export function registerHookTreeDataProvider(reloadFlag: boolean = false) {
 		return;
 	}
 
-	const coreHooksProvider = new GitHooksProvider(workingDir, false);
+	const coreHooksProvider = new GitHooksProvider(workingDir, false, hookDirectory);
 	const coreHookTreeView = vscode.window.createTreeView('git_hooks_view', {
 		treeDataProvider: coreHooksProvider,
 	});
@@ -212,10 +191,10 @@ export class GitHooksProvider implements vscode.TreeDataProvider<Hook> {
 	private predefinedHooksMap: Map<String, boolean>;
 
 	// get extension context
-	constructor(private workspaceRoot: string, private isFromScm: boolean) {
+	constructor(private workspaceRoot: string, private isFromScm: boolean, hookDirectory: string) {
 		vscode.workspace.onDidChangeWorkspaceFolders((e) => this.onActivateWorkspaceChanged(e));
 		this.onActivateWorkspaceChanged(undefined);
-		this.gitHooksDir = getMultiHookDirectories()[0];
+		this.gitHooksDir = hookDirectory;
 
 		const predefinedHooks: string[] = vscode.workspace.getConfiguration('GitHooks')?.['predefinedHooks'] ?? [];
 
@@ -271,9 +250,8 @@ export class GitHooksProvider implements vscode.TreeDataProvider<Hook> {
 		// for the root element with label githooks on the top
 		let hook = new Hook('Hooks', '', vscode.TreeItemCollapsibleState.Expanded, "");
 		hook.contextValue = 'root';
-		const currentHookDirectories = getMultiHookDirectories();
-		hook.description = currentHookDirectories[0];
-		hook.tooltip = 'Hooks Directory \n' + currentHookDirectories[0];
+		hook.description = this.gitHooksDir;
+		hook.tooltip = 'Hooks Directory \n' + this.gitHooksDir;
 
 		if (this.activeHookCount > 0) {
 			hook.iconPath = new vscode.ThemeIcon('testing-passed-icon', new vscode.ThemeColor('#RRGGBBAA'));

@@ -4,6 +4,12 @@ All notable changes to the "git-hooks" extension will be documented in this file
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [2.1.1] -- 2024-04-09
+-  not chaing `GitHooks.hooksDirectory` configuration on load to prevent it from git tracking
+- workspace bug fix while switching between scm and activity bar view
+- remove hook selection on workspace which has more than one folder
+- bug fix in getting git config for hooks directory
+
 ## [2.0.1] -- 2023-12-13
 - CacheContainer class added to cache git hooks directory reads
 - Single Hook Directory read correction
